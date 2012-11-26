@@ -1,8 +1,8 @@
 // Linear Algrebra library for Rust
 
-mod algorithms;
-mod generate;
-mod util;
+pub mod algorithms;
+pub mod generate;
+pub mod util;
 
 use to_str::ToStr;
 

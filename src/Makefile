@@ -1,8 +1,10 @@
 
 .PHONY: all
-all: libSciRust
+all: libSciRust benchmark
 
 .PHONY: libSciRust
 libSciRust :
-	rustc --lib scirust.rs
+	rustc --lib -O scirust.rs
 
+benchmark:  libSciRust benchmark.rs
+	rustc -L . -O benchmark.rs

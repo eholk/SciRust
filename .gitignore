@@ -1,4 +1,5 @@
 *~
 *.dylib
-*.dylib.dSYM
+*.dSYM
+src/benchmark
 

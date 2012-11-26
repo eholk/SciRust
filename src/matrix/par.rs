@@ -3,7 +3,7 @@ extern mod std;
 use std::future::spawn;
 
 // A parallel matrix creator.
-fn create<T: Copy Send, M: Send Copy BasicMatrix<T> Create<T, M>>(rows: uint, cols: uint, f: fn~(uint, uint) -> T) -> M {
+pub fn create<T: Copy Send, M: Send Copy BasicMatrix<T> Create<T, M>>(rows: uint, cols: uint, f: fn~(uint, uint) -> T) -> M {
     // by default, use 128x128 as a block size. We should use
     // autotuning to determine the best option.
 
@@ -14,7 +14,7 @@ fn min<T: cmp::Ord>(a: T, b: T) -> T {
     if a < b { move a } else { move b }
 }
 
-fn create_blocked<T: Copy Send, M: Send Copy BasicMatrix<T> Create<T, M>>(rows: uint, cols: uint, block_size: uint, f: fn~(uint, uint) -> T) -> M {
+pub fn create_blocked<T: Copy Send, M: Send Copy BasicMatrix<T> Create<T, M>>(rows: uint, cols: uint, block_size: uint, f: fn~(uint, uint) -> T) -> M {
     
     let mut blocks = ~[];
 

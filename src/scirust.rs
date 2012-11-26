@@ -6,4 +6,4 @@
 #[crate_type = "lib"];
 
 #[path="matrix/matrix.rs"]
-mod matrix;
+pub mod matrix;
