@@ -35,6 +35,85 @@ pub fn mat_mul<T: Copy Num, LHS: BasicMatrix<T>, RHS: BasicMatrix<T>, Res: Basic
     }
 }
 
+// M -> (A, B, C, D)
+fn subdivide<T: Copy Num, M: BasicMatrix<T>>(M: &a/M)
+    -> (SubMatrix/&a<T, M>, SubMatrix/&a<T, M>,
+        SubMatrix/&a<T, M>, SubMatrix/&a<T, M>)
+{
+    let H = M.num_rows();
+    let W = M.num_cols();
+
+    let H2  = H / 2;
+    let H2a = H - H2;
+    let W2  = W / 2;
+    let W2a = W - W2;
+
+    let A = SubMatrix(M,  0,  0,  H2,  W2);
+    let B = SubMatrix(M,  0, W2,  H2, W2a);
+    let C = SubMatrix(M, H2,  0, H2a,  W2);
+    let D = SubMatrix(M, H2, W2, H2a, W2a);
+
+    (A, B, C, D)
+}
+
+pub fn mat_mul_blocked<T: Copy Num, LHS: BasicMatrix<T>, RHS: BasicMatrix<T>, Res: BasicMatrix<T> Create<T, Res>> (lhs: &LHS, rhs: &RHS) -> Res
+{
+    if lhs.num_cols() != rhs.num_rows() {
+        fail fmt!("Incompatible matrix sizes. LHS: %?, RHS: %?",
+                  (lhs.num_rows(), lhs.num_cols()),
+                  (rhs.num_rows(), rhs.num_cols()))
+    }
+
+    const CUTOFF: uint = 32;
+    
+    if     lhs.num_rows() <= CUTOFF
+        || lhs.num_cols() <= CUTOFF
+        || rhs.num_rows() <= CUTOFF
+        || rhs.num_cols() <= CUTOFF
+    {
+        mat_mul(lhs, rhs)
+    }
+    else {
+        let (A, B, C, D) = subdivide(lhs);
+        let (E, F, G, H) = subdivide(rhs);
+
+        let A: Res = convert(&A);
+        let B: Res = convert(&B);
+        let C: Res = convert(&C);
+        let D: Res = convert(&D);
+
+        let E: Res = convert(&E);
+        let F: Res = convert(&F);
+        let G: Res = convert(&G);
+        let H: Res = convert(&H);
+
+        let AE: Res = mat_mul_blocked(&A, &E);
+        let BG: Res = mat_mul_blocked(&B, &G);
+
+        let An: Res = mat_add(&AE, &BG);
+
+        let AF: Res = mat_mul_blocked(&A, &F);
+        let BH: Res = mat_mul_blocked(&B, &H);
+
+        let Bn: Res = mat_add(&AF, &BH);
+
+        let CE: Res = mat_mul_blocked(&C, &E);
+        let DG: Res = mat_mul_blocked(&D, &G);
+
+        let Cn: Res = mat_add(&CE, &DG);
+
+        let CF: Res = mat_mul_blocked(&C, &F);
+        let DH: Res = mat_mul_blocked(&D, &H);
+
+        let Dn: Res = mat_add(&CF, &DH);
+
+        let top: Res = concat_cols(&An, &Bn);
+        let bot: Res = concat_cols(&Cn, &Dn);
+
+        concat_rows(&top, &bot)
+    }
+}
+
 pub fn mat_add<T: Copy Num, LHS: BasicMatrix<T>, RHS: BasicMatrix<T>, Res: BasicMatrix<T> Create<T, Res>> (lhs: &LHS, rhs: &RHS) -> Res
 {
     if lhs.num_cols() != rhs.num_cols() || lhs.num_rows() != rhs.num_rows() {

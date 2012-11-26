@@ -13,7 +13,7 @@ mod matrix;
 use matrix::{Matrix, TransposeMatrix, create};
 use matrix::generate::{identity, rand_L1};
 use matrix::algorithms::{dot, mat_mul, transpose, cholesky_seq_inplace,
-                        inverse, cholesky_blocked, par};
+                        inverse, cholesky_blocked, par, mat_mul_blocked};
 use matrix::util::to_str;
 
 type M = Matrix<float>;
@@ -37,6 +37,12 @@ fn benchmark(N: uint) {
     io::println(fmt!("Matrix Multiply (parallel): %?s", stop - start));
 
     // TODO: make sure A and Ap agree.
+
+    let start = precise_time_s();
+    let Ab: M = mat_mul_blocked(&L, &Lt);
+    let stop = precise_time_s();
+
+    io::println(fmt!("Matrix Multiply (blocked): %?s", stop - start));
 
     let start = precise_time_s();
     let Ai: M = inverse(&A);
