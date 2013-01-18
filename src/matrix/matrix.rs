@@ -4,17 +4,21 @@ pub mod algorithms;
 pub mod generate;
 pub mod util;
 
+use num::Num;
 use to_str::ToStr;
 
 // Sort of corresponds to the abstract algebra notion of a ring.
-pub trait Ring : Copy, ops::Add<self, self>, ops::Mul<self, self> {
+//
+// FIXME: This should also include Copy, Add and Mul, but it doesn't
+// due to bugs in Rust.
+pub trait Ring : {
     static fn one() -> self;
     static fn zero() -> self;
 }
 
 pub impl<T: num::Num> T : Ring {
-    static fn one() -> T { num::from_int(1) }
-    static fn zero() -> T { num::from_int(0) }
+    static fn one() -> T { Num::from_int(1) }
+    static fn zero() -> T { Num::from_int(0) }
 }
 
 pub trait BasicMatrix<T: Copy> {
@@ -30,33 +34,37 @@ pub trait Create<T: Copy, M: BasicMatrix<T>> {
 }
 
 pub trait Vector<T: Copy> : ops::Index<uint, T> {
-    pure fn len() -> uint;
+    pure fn len(&self) -> uint;
     pure fn get(uint) -> T;
     fn set(uint, T);
 }
 
 // It's nice to be able to use arbitrary vector slices as Vectors.
 pub impl<T: Copy> &[mut T] : Vector<T> {
-    pure fn len() -> uint { vec::len(self) }
+    pure fn len(&self) -> uint { vec::len(*self) }
     #[inline(always)]
     pure fn get(i: uint) -> T { self[i] }
     #[inline(always)]
     fn set(i: uint, x: T) { self[i] = x }
+}
 
+pub impl<T: Copy> &[mut T] : ops::Index<uint, T> {
     #[inline(always)]
-    pure fn index(i: uint) -> T { self[i] }
+    pure fn index(&self, i: uint) -> T { self[i] }
 }
 
 
 pub impl<T: Copy> ~[mut T] : Vector<T> {
-    pure fn len() -> uint { vec::len(self) }
+    pure fn len(&self) -> uint { vec::len(*self) }
     #[inline(always)]
     pure fn get(i: uint) -> T { self[i] }
     #[inline(always)]
     fn set(i: uint, x: T) { self[i] = x }
+}
 
+pub impl<T: Copy> ~[mut T] : ops::Index<uint, T> {
     #[inline(always)]
-    pure fn index(i: uint) -> T { self[i] }
+    pure fn index(&self, i: uint) -> T { self[i] }
 }
 
 // Row and Column Vectors (Views into existing matrices)
@@ -66,14 +74,16 @@ struct RowVector<T: Copy, M: BasicMatrix<T>> {
 }
 
 impl<T: Copy, M: BasicMatrix<T>> RowVector<T, M> : Vector<T> {
-    pure fn len() -> uint { self.base.num_cols() }
+    pure fn len(&self) -> uint { self.base.num_cols() }
     #[inline(always)]
     pure fn get(j: uint) -> T { self.base.get(self.i, j) }
     #[inline(always)]
     fn set(j: uint, x: T) { self.base.set(self.i, j, x) }
+}
 
+impl<T: Copy, M: BasicMatrix<T>> RowVector<T, M> : ops::Index<uint, T> {
     #[inline(always)]
-    pure fn index(i: uint) -> T { self.get(i) }
+    pure fn index(&self, i: uint) -> T { self.get(i) }
 }
 
 struct ColumnVector<T: Copy, M: BasicMatrix<T>> {
@@ -82,23 +92,25 @@ struct ColumnVector<T: Copy, M: BasicMatrix<T>> {
 }
 
 impl<T: Copy, M: BasicMatrix<T>> ColumnVector<T, M> : Vector<T> {
-    pure fn len() -> uint { self.base.num_rows() }
+    pure fn len(&self) -> uint { self.base.num_rows() }
     #[inline(always)]
     pure fn get(i: uint) -> T { self.base.get(i, self.j) }
     #[inline(always)]
     fn set(i: uint, x: T) { self.base.set(i, self.j, x) }
-
-    #[inline(always)]
-    pure fn index(i: uint) -> T { self.get(i) }
 }
 
-pure fn row<T: Copy, M: BasicMatrix<T>>(m: &a/M, i: uint)
+impl<T: Copy, M: BasicMatrix<T>> ColumnVector<T, M> : ops::Index<uint, T> {
+    #[inline(always)]
+    pure fn index(&self, i: uint) -> T { self.get(i) }
+}
+
+pub pure fn row<T: Copy, M: BasicMatrix<T>>(m: &a/M, i: uint)
     -> RowVector/&a<T, M>
 {
     RowVector { i: i, base: m }
 }
 
-pure fn col<T: Copy, M: BasicMatrix<T>>(m: &a/M, j: uint)
+pub pure fn col<T: Copy, M: BasicMatrix<T>>(m: &a/M, j: uint)
     -> ColumnVector/&a<T, M>
 {
     ColumnVector { j: j, base: m }
@@ -112,22 +124,7 @@ pub struct Matrix/&<T: Copy> {
     data: ~[mut T]
 }
 
-
 pub impl<T: Copy> Matrix<T> : BasicMatrix<T> {
-    static fn create(i: uint, j: uint, init: fn(uint, uint) -> T)
-        -> Matrix<T>
-    {
-        Matrix {
-            rows: i,
-            cols: j,
-            data: vec::to_mut(do vec::from_fn(i * j) |k| {
-                let i = k / j;
-                let j = k % j;
-                init(i, j)
-            })
-        }
-    }
-
     #[inline(always)]
     pure fn get(i: uint, j: uint) -> T {
         if i < self.num_rows() && j < self.num_cols() {
@@ -221,7 +218,7 @@ fn SubMatrix<T: Copy, M: BasicMatrix<T> RefineSubMatrix<T, M>>(m: &a/M,
 }
 */
 
-fn SubMatrix<T: Copy, M: BasicMatrix<T>>(m: &a/M,
+pub fn SubMatrix<T: Copy, M: BasicMatrix<T>>(m: &a/M,
                                          i: uint,
                                          j: uint,
                                          rows: uint,
@@ -258,7 +255,7 @@ impl<T: Copy, M: BasicMatrix<T>> SubMatrix<T, M> : BasicMatrix<T> {
     }
 }
 
-trait Sqrt {
+pub trait Sqrt {
     pure fn sqrt() -> self;
 }
 

@@ -1,9 +1,17 @@
 extern mod std;
 
+use num::Num;
+
 use std::future::spawn;
 
+use matrix::{BasicMatrix, SubMatrix, TransposeMatrix, Create, row, col};
+use matrix::algorithms::{concat_rows, concat_cols, dot, convert, mat_sub,
+                        mat_x_inplace, mat_add, cholesky_seq_inplace,
+                        transpose};
+use matrix::generate::{zero_matrix};
+
 // A parallel matrix creator.
-pub fn create<T: Copy Send, M: Send Copy BasicMatrix<T> Create<T, M>>(rows: uint, cols: uint, f: fn~(uint, uint) -> T) -> M {
+pub fn create<T: Copy Owned, M: Owned Copy BasicMatrix<T> Create<T, M>>(rows: uint, cols: uint, f: fn~(uint, uint) -> T) -> M {
     // by default, use 128x128 as a block size. We should use
     // autotuning to determine the best option.
 
@@ -14,7 +22,7 @@ fn min<T: cmp::Ord>(a: T, b: T) -> T {
     if a < b { move a } else { move b }
 }
 
-pub fn create_blocked<T: Copy Send, M: Send Copy BasicMatrix<T> Create<T, M>>(rows: uint, cols: uint, block_size: uint, f: fn~(uint, uint) -> T) -> M {
+pub fn create_blocked<T: Copy Owned, M: Owned Copy BasicMatrix<T> Create<T, M>>(rows: uint, cols: uint, block_size: uint, f: fn~(uint, uint) -> T) -> M {
     
     let mut blocks = ~[];
 
@@ -29,9 +37,9 @@ pub fn create_blocked<T: Copy Send, M: Send Copy BasicMatrix<T> Create<T, M>>(ro
             
             let cols = min(block_size, cols - j);
 
-            let fu = do spawn |copy i, copy j| {
+            let fu = do spawn |copy i, copy j, copy f| {
                 //error!("block %?: %?", (i, j), (rows, cols));
-                do matrix::create::<T, M, M>(rows, cols) |ii, jj|
+                do Create::create::<T, M, M>(rows, cols) |ii, jj|
                 {
                     f(i + ii, j + jj)
                 }
@@ -64,7 +72,7 @@ pub fn create_blocked<T: Copy Send, M: Send Copy BasicMatrix<T> Create<T, M>>(ro
     M
 }
 
-pub fn mat_mul<T: Send Copy Num, LHS: BasicMatrix<T>, RHS: BasicMatrix<T>, Res: Send Copy BasicMatrix<T> Create<T, Res>> (lhs: &LHS, rhs: &RHS) -> Res
+pub fn mat_mul<T: Owned Copy Num, LHS: BasicMatrix<T>, RHS: BasicMatrix<T>, Res: Owned Copy BasicMatrix<T> Create<T, Res>> (lhs: &LHS, rhs: &RHS) -> Res
 {
     if lhs.num_cols() != rhs.num_rows() {
         fail fmt!("Incompatible matrix sizes. LHS: %?, RHS: %?",
@@ -94,7 +102,7 @@ pub fn mat_mul<T: Send Copy Num, LHS: BasicMatrix<T>, RHS: BasicMatrix<T>, Res: 
     }
 }
 
-pub fn inverse<T: Copy Send Num, M: Send BasicMatrix<T>, R: Copy Send BasicMatrix<T> Create<T, R>>(M: &M) -> R {
+pub fn inverse<T: Copy Owned Num, M: Owned BasicMatrix<T>, R: Copy Owned BasicMatrix<T> Create<T, R>>(M: &M) -> R {
     // This basically does the blockwise inversion algorithm on the
     // Wikipedia page [1]. It's not a very efficient implementation,
     // since it ends up doing an absurd number of copies. It also
@@ -108,8 +116,8 @@ pub fn inverse<T: Copy Send Num, M: Send BasicMatrix<T>, R: Copy Send BasicMatri
     let N = M.num_rows();
 
     if N == 1 {
-        matrix::create::<T, R, R>(1, 1, |i, j|
-                                  num::from_int::<T>(1) / M.get(i, j))
+        Create::create::<T, R, R>(1, 1, |i, j|
+                                  Num::from_int::<T>(1) / M.get(i, j))
     }
     else {
         let N2 = N / 2;
@@ -149,7 +157,7 @@ pub fn inverse<T: Copy Send Num, M: Send BasicMatrix<T>, R: Copy Send BasicMatri
         // new C
         //error!("C");
         let Cn: R = mat_mul(&Dn, &CAi);
-        mat_x_inplace(&Cn, num::from_int(-1));
+        mat_x_inplace(&Cn, Num::from_int(-1));
 
         // new B
         //error!("B");
@@ -162,7 +170,7 @@ pub fn inverse<T: Copy Send Num, M: Send BasicMatrix<T>, R: Copy Send BasicMatri
         let mut An: R = mat_mul(&Bn, &CAi);
         An = mat_add(&Ai, &An);
 
-        mat_x_inplace(&Bn, num::from_int(-1));
+        mat_x_inplace(&Bn, Num::from_int(-1));
 
         // Stitch it all back together.
         let top: R = concat_cols(&An, &Bn);
@@ -171,7 +179,7 @@ pub fn inverse<T: Copy Send Num, M: Send BasicMatrix<T>, R: Copy Send BasicMatri
     }
 }
 
-pub fn cholesky_blocked<M: Send Copy BasicMatrix<float>, R: Send Copy BasicMatrix<float> Create<float, R>>(M: &M) -> R {
+pub fn cholesky_blocked<M: Owned Copy BasicMatrix<float>, R: Owned Copy BasicMatrix<float> Create<float, R>>(M: &M) -> R {
     /*
     A recursive blocked Cholesky factorization.
 
@@ -224,7 +232,7 @@ pub fn cholesky_blocked<M: Send Copy BasicMatrix<float>, R: Send Copy BasicMatri
         Dn = cholesky_blocked(&Dn);
 
         let Z = zero_matrix::<float, R>(N2, N2a);
-
+ 
         let top: R = concat_cols(&Ac, &Z);
         let bot: R = concat_cols(&CAci, &Dn);
 

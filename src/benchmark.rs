@@ -10,7 +10,7 @@ use std::time::precise_time_s;
 #[path="matrix/matrix.rs"]
 mod matrix;
 
-use matrix::{Matrix, TransposeMatrix, create};
+use matrix::{Matrix, TransposeMatrix, Create};
 use matrix::generate::{identity, rand_L1};
 use matrix::algorithms::{dot, mat_mul, transpose, cholesky_seq_inplace,
                         inverse, cholesky_blocked, par, mat_mul_blocked};

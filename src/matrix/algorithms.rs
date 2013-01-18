@@ -1,3 +1,7 @@
+use num::Num;
+
+use matrix::{Create, BasicMatrix, SubMatrix, Sqrt, TransposeMatrix, Vector,
+             row, col};
 use matrix::generate::zero_matrix;
 
 pub mod par;
@@ -9,7 +13,7 @@ pub fn dot<T: Copy Num, L: Vector<T>, R: Vector<T>>(lhs: &L, rhs: &R) -> T {
 
     //error!("%? ### %?", lhs, rhs);
 
-    let mut acc : T = num::from_int(0);
+    let mut acc : T = Num::from_int(0);
     for uint::range(0, lhs.len()) |i| {
         acc += lhs[i] * rhs[i]
     }
@@ -30,7 +34,7 @@ pub fn mat_mul<T: Copy Num, LHS: BasicMatrix<T>, RHS: BasicMatrix<T>, Res: Basic
     //       (rhs.num_rows(), rhs.num_cols()),
     //       (lhs.num_rows(), rhs.num_cols()));
 
-    do create::<T, Res, Res>(lhs.num_rows(), rhs.num_cols()) |i, j| {
+    do Create::create::<T, Res, Res>(lhs.num_rows(), rhs.num_cols()) |i, j| {
         dot(&row(lhs, i), &col(rhs, j))
     }
 }
@@ -120,7 +124,7 @@ pub fn mat_add<T: Copy Num, LHS: BasicMatrix<T>, RHS: BasicMatrix<T>, Res: Basic
         fail ~"Incompatible matrix sizes"
     }
 
-    do create::<T, Res, Res>(lhs.num_rows(), rhs.num_cols()) |i, j| {
+    do Create::create::<T, Res, Res>(lhs.num_rows(), rhs.num_cols()) |i, j| {
         lhs.get(i, j) + rhs.get(i, j)
     }
 }
@@ -133,7 +137,7 @@ pub fn mat_sub<T: Copy Num, LHS: BasicMatrix<T>, RHS: BasicMatrix<T>, Res: Basic
                   (rhs.num_rows(), rhs.num_cols()))
     }
 
-    do create::<T, Res, Res>(lhs.num_rows(), rhs.num_cols()) |i, j| {
+    do Create::create::<T, Res, Res>(lhs.num_rows(), rhs.num_cols()) |i, j| {
         lhs.get(i, j) - rhs.get(i, j)
     }
 }
@@ -143,7 +147,7 @@ pub fn mat_x_inplace<T: Copy Num, M: BasicMatrix<T>>(A: &M, x: T) {
 }
 
 pub fn transpose<T: Copy, M: BasicMatrix<T>, R: BasicMatrix<T> Create<T, R>>(m: &M) -> R {
-    do create::<T, R, R>(m.num_cols(), m.num_rows()) |i, j| {
+    do Create::create::<T, R, R>(m.num_cols(), m.num_rows()) |i, j| {
         m.get(j, i)
     }
 }
@@ -190,7 +194,7 @@ pub fn cholesky_seq_inplace_start<T: Copy Num Sqrt, M: BasicMatrix<float>>(A: &M
 
     for uint::range(start, A.num_rows()) |i| {
         for uint::range(i + 1, A.num_cols()) |j| {
-            A.set(i, j, num::from_int(0))
+            A.set(i, j, Num::from_int(0))
         }
     }    
 }
@@ -201,7 +205,7 @@ pub fn concat_rows<T: Copy, LHS: BasicMatrix<T>, RHS: BasicMatrix<T>, R: BasicMa
 
     let N = A.num_rows();
 
-    do create::<T, R, R>(N + B.num_rows(), A.num_cols()) |i, j| {
+    do Create::create::<T, R, R>(N + B.num_rows(), A.num_cols()) |i, j| {
         if i < N {
             A.get(i, j)
         }
@@ -220,7 +224,7 @@ pub fn concat_cols<T: Copy, LHS: BasicMatrix<T>, RHS: BasicMatrix<T>, R: BasicMa
 
     let N = A.num_cols();
 
-    do create::<T, R, R>(B.num_rows(), N + B.num_cols()) |i, j| {
+    do Create::create::<T, R, R>(B.num_rows(), N + B.num_cols()) |i, j| {
         if j < N {
             A.get(i, j)
         }
@@ -231,7 +235,7 @@ pub fn concat_cols<T: Copy, LHS: BasicMatrix<T>, RHS: BasicMatrix<T>, R: BasicMa
 }
 
 pub fn convert<T: Copy, M: BasicMatrix<T>, R: BasicMatrix<T> Create<T, R>>(M: &M) -> R {
-    create::<T, R, R>(M.num_rows(), M.num_cols(), |i, j| M.get(i, j))
+    Create::create::<T, R, R>(M.num_rows(), M.num_cols(), |i, j| M.get(i, j))
 }
 
 pub fn inverse<T: Copy Num, M: BasicMatrix<T>, R: BasicMatrix<T> Create<T, R>>(M: &M) -> R {
@@ -248,7 +252,8 @@ pub fn inverse<T: Copy Num, M: BasicMatrix<T>, R: BasicMatrix<T> Create<T, R>>(M
     let N = M.num_rows();
 
     if N == 1 {
-        create::<T, R, R>(1, 1, |i, j| num::from_int::<T>(1) / M.get(i, j))
+        Create::create::<T, R, R>(1, 1,
+                                  |i, j| Num::from_int::<T>(1) / M.get(i, j))
     }
     else {
         let N2 = N / 2;
@@ -288,7 +293,7 @@ pub fn inverse<T: Copy Num, M: BasicMatrix<T>, R: BasicMatrix<T> Create<T, R>>(M
         // new C
         //error!("C");
         let Cn: R = mat_mul(&Dn, &CAi);
-        mat_x_inplace(&Cn, num::from_int(-1));
+        mat_x_inplace(&Cn, Num::from_int(-1));
 
         // new B
         //error!("B");
@@ -301,7 +306,7 @@ pub fn inverse<T: Copy Num, M: BasicMatrix<T>, R: BasicMatrix<T> Create<T, R>>(M
         let mut An: R = mat_mul(&Bn, &CAi);
         An = mat_add(&Ai, &An);
 
-        mat_x_inplace(&Bn, num::from_int(-1));
+        mat_x_inplace(&Bn, Num::from_int(-1));
 
         // Stitch it all back together.
         let top: R = concat_cols(&An, &Bn);

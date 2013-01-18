@@ -7,3 +7,5 @@
 
 #[path="matrix/matrix.rs"]
 pub mod matrix;
+
+extern mod std;

@@ -1,3 +1,5 @@
+use matrix::BasicMatrix;
+
 pub fn to_str<T: Copy ToStr, M: BasicMatrix<T>>(m: &M) -> ~str {
     let mut s = ~"";
     for uint::range(0, m.num_rows()) |i| {
