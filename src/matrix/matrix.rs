@@ -7,7 +7,7 @@ pub mod util;
 use to_str::ToStr;
 
 // Sort of corresponds to the abstract algebra notion of a ring.
-pub trait Ring : Copy, ops::Add<self, self>, ops::Mul<self, self> {
+pub trait Ring : Copy ops::Add<self, self> ops::Mul<self, self> {
     static fn one() -> self;
     static fn zero() -> self;
 }
@@ -42,11 +42,7 @@ pub impl<T: Copy> &[mut T] : Vector<T> {
     pure fn get(i: uint) -> T { self[i] }
     #[inline(always)]
     fn set(i: uint, x: T) { self[i] = x }
-
-    #[inline(always)]
-    pure fn index(i: uint) -> T { self[i] }
 }
-
 
 pub impl<T: Copy> ~[mut T] : Vector<T> {
     pure fn len() -> uint { vec::len(self) }
@@ -54,9 +50,6 @@ pub impl<T: Copy> ~[mut T] : Vector<T> {
     pure fn get(i: uint) -> T { self[i] }
     #[inline(always)]
     fn set(i: uint, x: T) { self[i] = x }
-
-    #[inline(always)]
-    pure fn index(i: uint) -> T { self[i] }
 }
 
 // Row and Column Vectors (Views into existing matrices)
@@ -71,9 +64,12 @@ impl<T: Copy, M: BasicMatrix<T>> RowVector<T, M> : Vector<T> {
     pure fn get(j: uint) -> T { self.base.get(self.i, j) }
     #[inline(always)]
     fn set(j: uint, x: T) { self.base.set(self.i, j, x) }
+}
 
+
+impl<T: Copy, M: BasicMatrix<T>> RowVector<T, M> : ops::Index<uint, T> {
     #[inline(always)]
-    pure fn index(i: uint) -> T { self.get(i) }
+    pure fn index(&self, i: uint) -> T { self.get(i) }
 }
 
 struct ColumnVector<T: Copy, M: BasicMatrix<T>> {
@@ -87,9 +83,11 @@ impl<T: Copy, M: BasicMatrix<T>> ColumnVector<T, M> : Vector<T> {
     pure fn get(i: uint) -> T { self.base.get(i, self.j) }
     #[inline(always)]
     fn set(i: uint, x: T) { self.base.set(i, self.j, x) }
+}
 
+impl<T: Copy, M: BasicMatrix<T>> ColumnVector<T, M> : ops::Index<uint, T> {
     #[inline(always)]
-    pure fn index(i: uint) -> T { self.get(i) }
+    pure fn index(&self, i: uint) -> T { self.get(i) }
 }
 
 pure fn row<T: Copy, M: BasicMatrix<T>>(m: &a/M, i: uint)
@@ -114,20 +112,6 @@ pub struct Matrix/&<T: Copy> {
 
 
 pub impl<T: Copy> Matrix<T> : BasicMatrix<T> {
-    static fn create(i: uint, j: uint, init: fn(uint, uint) -> T)
-        -> Matrix<T>
-    {
-        Matrix {
-            rows: i,
-            cols: j,
-            data: vec::to_mut(do vec::from_fn(i * j) |k| {
-                let i = k / j;
-                let j = k % j;
-                init(i, j)
-            })
-        }
-    }
-
     #[inline(always)]
     pure fn get(i: uint, j: uint) -> T {
         if i < self.num_rows() && j < self.num_cols() {

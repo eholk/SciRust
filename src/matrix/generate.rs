@@ -1,6 +1,6 @@
 use num::Num;
 
-fn identity<T: Copy Ring, M: BasicMatrix<T> Create<T, M>>(N: uint)
+pub fn identity<T: Copy Ring, M: BasicMatrix<T> Create<T, M>>(N: uint)
     -> M
 {
     // Why does create have three type parameters?
@@ -15,7 +15,7 @@ fn identity<T: Copy Ring, M: BasicMatrix<T> Create<T, M>>(N: uint)
 }
 
 // Generate a random square lower triangular matrix with unit diagonal.
-fn rand_L1(N: uint) -> Matrix<float> {
+pub fn rand_L1(N: uint) -> Matrix<float> {
     let r = rand::Rng();
     do create::<float, Matrix<float>, Matrix<float>>(N, N) |i, j| {
         if i == j {
@@ -30,7 +30,7 @@ fn rand_L1(N: uint) -> Matrix<float> {
     }
 }
 
-fn zero_matrix<T: Copy Ring, M: BasicMatrix<T> Create<T, M>>(n: uint, m: uint) -> M
+pub fn zero_matrix<T: Ring, M: BasicMatrix<T> Create<T, M>>(n: uint, m: uint) -> M
 {
     create::<T, M, M>(n, m, |_i, _j| zero::<T>())
 }
