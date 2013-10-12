@@ -94,12 +94,14 @@ impl<'self, T, M: BasicMatrix<T>> BasicMatrix<T> for &'self M {
 pub fn row<'a, T, M: BasicMatrix<T>>(m: &'a M, i: uint)
     -> RowVector<'a, T, M>
 {
+    assert!(i < m.num_rows());
     RowVector { i: i, base: m }
 }
 
 pub fn col<'a, T, M: BasicMatrix<T>>(m: &'a M, j: uint)
     -> ColumnVector<'a, T, M>
 {
+    assert!(j < m.num_cols());
     ColumnVector { j: j, base: m }
 }
 
@@ -212,6 +214,12 @@ pub fn SubMatrix<'a, T, M: BasicMatrix<T>>(m: &'a M,
                                          cols: uint)
     -> SubMatrix<'a, T, M>
 {
+    assert!(rows > 0);
+    assert!(cols > 0);
+    assert!(i < m.num_rows());
+    assert!(j < m.num_cols());
+    assert!(i + rows <= m.num_rows());
+    assert!(j + cols <= m.num_cols());
     SubMatrix {
         i: i, j: j, rows: rows, cols: cols, base: m
     }        
@@ -268,11 +276,11 @@ impl<'self, T, M: BasicMatrix<T>> BasicMatrix<T> for TransposeMatrix<'self, T, M
 
     #[inline(always)]
     fn get(&self, i: uint, j: uint) -> T {
-        self.get_ref().get(i, j)
+        self.get_ref().get(j, i)
     }
 
     #[inline(always)]
     fn set(&mut self, i: uint, j: uint, x: T) {
-        self.get_mut().set(i, j, x)
+        self.get_mut().set(j, i, x)
     }
 }

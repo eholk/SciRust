@@ -5,26 +5,38 @@ use matrix::{BasicMatrix, Create, SubMatrix,
              TransposeMatrix, Vector,
              col, row};
 use matrix::generate::zero_matrix;
+use matrix::util::tracefn;
 
 //pub mod par;
 
-pub fn dot<T: num::Num + num::FromPrimitive, L: Vector<T>, R: Vector<T>>(lhs: &L, rhs: &R) -> T {
+pub fn dot<T: num::Num, L: Vector<T>, R: Vector<T>>(lhs: &L, rhs: &R) -> T {
+    do tracefn(("dot", lhs.len(), rhs.len())) {
+    assert!(lhs.len() > 0)
     if lhs.len() != rhs.len() {
         fail!(~"Invalid vector lengths.")
     }
 
     //error!("%? ### %?", lhs, rhs);
 
-    let mut acc : T = num::from_int(0).unwrap();
-    for i in range(0, lhs.len()) {
+        info!("a");
+        let a = lhs[0];
+        info!("b");
+        let b = rhs[0];
+
+    let mut acc : T = a * b;
+    for i in range(1, lhs.len()) {
         acc = acc + (lhs[i] * rhs[i])
     }
 
     acc
+    }
 }
 
 pub fn mat_mul<T: Num + num::FromPrimitive, LHS: BasicMatrix<T>, RHS: BasicMatrix<T>, Res: BasicMatrix<T> + Create<T>> (lhs: &LHS, rhs: &RHS) -> Res
 {
+    do tracefn(("mat_mul",
+               (lhs.num_rows(), lhs.num_cols()),
+               (rhs.num_rows(), rhs.num_cols()))) {
     if lhs.num_cols() != rhs.num_rows() {
         fail!(fmt!("Incompatible matrix sizes. LHS: %?, RHS: %?",
                    (lhs.num_rows(), lhs.num_cols()),
@@ -33,6 +45,7 @@ pub fn mat_mul<T: Num + num::FromPrimitive, LHS: BasicMatrix<T>, RHS: BasicMatri
 
     Create::<T>::create(lhs.num_rows(), rhs.num_cols(),
                         |i, j| dot(&row(lhs, i), &col(rhs, j)))
+    }
 }
 
 // M -> (A, B, C, D)
@@ -247,6 +260,8 @@ pub fn inverse<T: Num + FromPrimitive, M: BasicMatrix<T>, R: BasicMatrix<T> + Cr
 
     let N = M.num_rows();
 
+    do tracefn(("inverse", N)) {
+
     if N == 1 {
         Create::<T>::create(1, 1, |i, j| num::from_int::<T>(1).unwrap() / M.get(i, j))
     }
@@ -308,6 +323,7 @@ pub fn inverse<T: Num + FromPrimitive, M: BasicMatrix<T>, R: BasicMatrix<T> + Cr
         let bot: R = concat_cols(&Cn, &Dn);
         concat_rows(&top, &bot)
     }
+    }
 }
 
 pub fn cholesky_blocked<M: BasicMatrix<f64>, R: BasicMatrix<f64> + Create<f64>>(M: &M) -> R {
@@ -335,6 +351,8 @@ pub fn cholesky_blocked<M: BasicMatrix<f64>, R: BasicMatrix<f64> + Create<f64>>(
 
     assert!(M.num_rows() == M.num_cols());
     let N = M.num_rows();
+
+    do tracefn(("cholesky_blocked", N)) {
 
     static BLOCK_SIZE: uint = 1;
 
@@ -368,5 +386,6 @@ pub fn cholesky_blocked<M: BasicMatrix<f64>, R: BasicMatrix<f64> + Create<f64>>(
         let bot: R = concat_cols(&CAci, &Dn);
 
         concat_rows(&top, &bot)
+    }
     }
 }

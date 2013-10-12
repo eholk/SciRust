@@ -28,7 +28,7 @@ fn benchmark(N: uint) {
     let start = precise_time_s();
     let A: M = mat_mul::<f64, M, TransposeMatrix<f64, M>, M>(&L, &Lt);
     let stop = precise_time_s();
-
+    
     println!("Matrix Multiply: {:?}s", stop - start);
 
     //let start = precise_time_s();
@@ -42,13 +42,13 @@ fn benchmark(N: uint) {
     let start = precise_time_s();
     let Ab: M = mat_mul_blocked(&L, &Lt);
     let stop = precise_time_s();
-
+    
     println!("Matrix Multiply (blocked): {:?}s", stop - start);
 
     let start = precise_time_s();
     let Ai: M = inverse(&A);
     let stop = precise_time_s();
-
+    
     println!("Matrix Inverse: {:?}s", stop - start);
 
     //let start = precise_time_s();
