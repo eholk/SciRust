@@ -1,36 +1,42 @@
-use num::Num;
+use std::num::from_int;
+use std::rand;
+use std::rand::Rand;
 
-pub fn identity<T: Copy Ring, M: BasicMatrix<T> Create<T, M>>(N: uint)
+use matrix::{BasicMatrix, Create, Matrix, Ring};
+
+pub fn identity<T: Ring, M: BasicMatrix<T> + Create<T>>(N: uint)
     -> M
 {
-    // Why does create have three type parameters?
-    do create::<T, M, M>(N, N) |i, j| {
+    do Create::<T>::create(N, N) |i, j| {
         if i == j {
-            one::<T>()
+            Ring::one()
         }
         else {
-            zero()
+            Ring::zero()
         }
     }
 }
 
 // Generate a random square lower triangular matrix with unit diagonal.
-pub fn rand_L1(N: uint) -> Matrix<float> {
-    let r = rand::Rng();
-    do create::<float, Matrix<float>, Matrix<float>>(N, N) |i, j| {
+pub fn rand_L1<T: Rand + FromPrimitive, M: BasicMatrix<T> + Create<T>>(N: uint)
+    -> M {
+    let mut r = rand::rng();
+
+    do Create::create(N, N) |i, j| {
         if i == j {
-            1.0
+            from_int::<T>(1).unwrap()
         }
         else if i > j {
-            r.gen_float()
+            Rand::rand(&mut r)
         }
         else {
-            0f
+            from_int(0).unwrap()
         }
     }
 }
 
-pub fn zero_matrix<T: Ring, M: BasicMatrix<T> Create<T, M>>(n: uint, m: uint) -> M
+pub fn zero_matrix<T: Ring, M: BasicMatrix<T> + Create<T>>
+    (n: uint, m: uint) -> M
 {
-    create::<T, M, M>(n, m, |_i, _j| zero::<T>())
+    Create::<T>::create(n, m, |_i, _j| Ring::zero())
 }

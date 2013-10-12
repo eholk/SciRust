@@ -1,5 +1,6 @@
 *~
 *.dylib
 *.dSYM
+*.so
 src/benchmark
 

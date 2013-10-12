@@ -5,5 +5,8 @@
 #[comment = "A Scientific Computing Library for Rust"];
 #[crate_type = "lib"];
 
+extern mod extra;
+extern mod std;
+
 #[path="matrix/matrix.rs"]
 pub mod matrix;

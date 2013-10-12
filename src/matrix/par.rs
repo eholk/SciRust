@@ -1,20 +1,31 @@
-extern mod std;
+use extra::future;
 
-use std::future::spawn;
+use std::cast;
+use std::num;
+
+use matrix::{BasicMatrix, Create, SubMatrix, TransposeMatrix,
+            col, row};
+use matrix::algorithms::{concat_cols, concat_rows, convert,
+                         cholesky_seq_inplace,
+                         dot,
+                         mat_sub, mat_add, mat_x_inplace, transpose};
+use matrix::generate::{zero_matrix};
 
 // A parallel matrix creator.
-pub fn create<T: Copy Send, M: Send Copy BasicMatrix<T> Create<T, M>>(rows: uint, cols: uint, f: fn~(uint, uint) -> T) -> M {
+pub fn create<T: Send, M: Send + BasicMatrix<T> + Create<T, M>>
+    (rows: uint, cols: uint, f: ~fn(uint, uint) -> T) -> M
+{
     // by default, use 128x128 as a block size. We should use
     // autotuning to determine the best option.
 
-    create_blocked(rows, cols, 128, move f)
+    create_blocked(rows, cols, 128, f)
 }
 
-fn min<T: cmp::Ord>(a: T, b: T) -> T {
-    if a < b { move a } else { move b }
+fn min<T: Ord>(a: T, b: T) -> T {
+    if a < b { a } else { b }
 }
 
-pub fn create_blocked<T: Copy Send, M: Send Copy BasicMatrix<T> Create<T, M>>(rows: uint, cols: uint, block_size: uint, f: fn~(uint, uint) -> T) -> M {
+pub fn create_blocked<T: Send, M: Send + BasicMatrix<T> + Create<T, M>>(rows: uint, cols: uint, block_size: uint, f: ~fn(uint, uint) -> T) -> M {
     
     let mut blocks = ~[];
 
@@ -29,33 +40,33 @@ pub fn create_blocked<T: Copy Send, M: Send Copy BasicMatrix<T> Create<T, M>>(ro
             
             let cols = min(block_size, cols - j);
 
-            let fu = do spawn |copy i, copy j| {
+            let fu = do future::Future::spawn || {
                 //error!("block %?: %?", (i, j), (rows, cols));
-                do matrix::create::<T, M, M>(rows, cols) |ii, jj|
+                do create::<T, M>(rows, cols) |ii, jj|
                 {
                     f(i + ii, j + jj)
                 }
             };
 
-            row.push(move fu);
+            row.push(fu);
             j += block_size;
         }
         
-        blocks.push(move row);
+        blocks.push(row);
         i += block_size;
     }
     
     // read the first row
-    let mut M: M = blocks[0][0].get();
-    for uint::range(1, blocks[0].len()) |i| {
-        M = concat_cols(&M, &blocks[0][i].get())
+    let mut M: M = blocks[0][0].unwrap();
+    for i in range(1, blocks[0].len()) {
+        M = concat_cols(&M, blocks[0][i].get_ref())
     }
     
     // read the rest of the rows
-    for uint::range(1, blocks.len()) |j| {
-        let mut r: M = blocks[j][0].get();
-        for uint::range(1, blocks[j].len()) |i| {
-            r = concat_cols(&r, &blocks[j][i].get())
+    for j in range(1, blocks.len()) {
+        let mut r: M = blocks[j][0].unwrap();
+        for i in range(1, blocks[j].len()) {
+            r = concat_cols(&r, blocks[j][i].get_ref())
         }
         
         M = concat_rows(&M, &r)
@@ -64,12 +75,12 @@ pub fn create_blocked<T: Copy Send, M: Send Copy BasicMatrix<T> Create<T, M>>(ro
     M
 }
 
-pub fn mat_mul<T: Send Copy Num, LHS: BasicMatrix<T>, RHS: BasicMatrix<T>, Res: Send Copy BasicMatrix<T> Create<T, Res>> (lhs: &LHS, rhs: &RHS) -> Res
+pub fn mat_mul<T: Send + Num + num::FromPrimitive, LHS: BasicMatrix<T>, RHS: BasicMatrix<T>, Res: Send + BasicMatrix<T> + Create<T, Res>> (lhs: &LHS, rhs: &RHS) -> Res
 {
     if lhs.num_cols() != rhs.num_rows() {
-        fail fmt!("Incompatible matrix sizes. LHS: %?, RHS: %?",
+        fail!(fmt!("Incompatible matrix sizes. LHS: %?, RHS: %?",
                   (lhs.num_rows(), lhs.num_cols()),
-                  (rhs.num_rows(), rhs.num_cols()))
+                  (rhs.num_rows(), rhs.num_cols())))
     }
 
     //error!("Multiplying %? by %? -> %?",
@@ -81,20 +92,20 @@ pub fn mat_mul<T: Send Copy Num, LHS: BasicMatrix<T>, RHS: BasicMatrix<T>, Res: 
     unsafe {
         let num_rows = lhs.num_rows();
         let num_cols = rhs.num_cols();
-        let lhs = ptr::addr_of(lhs);
-        let rhs = ptr::addr_of(rhs);
-        let M = do create::<T, Res>(num_rows, num_cols) |i, j| unsafe {
-            let lhs: &LHS = &*lhs;
-            let rhs: &RHS = &*rhs;
+        let lhs = unsafe { cast::unsafe_copy(& &lhs) };
+        let rhs = unsafe { cast::unsafe_copy(& &rhs) };
+        let M = do create::<T, Res>(num_rows, num_cols) |i, j| { unsafe {
+            //let lhs: LHS = lhs;
+            //let rhs: RHS = rhs;
             dot(&row(lhs, i), &col(rhs, j))
-        };
+        } };
 
         //error!("Done");
         M
     }
 }
 
-pub fn inverse<T: Copy Send Num, M: Send BasicMatrix<T>, R: Copy Send BasicMatrix<T> Create<T, R>>(M: &M) -> R {
+pub fn inverse<T: Send + Num + FromPrimitive, M: Send + BasicMatrix<T>, R: Send + BasicMatrix<T> + Create<T, R>>(M: &M) -> R {
     // This basically does the blockwise inversion algorithm on the
     // Wikipedia page [1]. It's not a very efficient implementation,
     // since it ends up doing an absurd number of copies. It also
@@ -103,13 +114,13 @@ pub fn inverse<T: Copy Send Num, M: Send BasicMatrix<T>, R: Copy Send BasicMatri
     //
     // [1] http://en.wikipedia.org/wiki/Invertible_matrix#Blockwise_inversion
 
-    assert M.num_rows() == M.num_cols();
+    assert!(M.num_rows() == M.num_cols());
 
     let N = M.num_rows();
 
     if N == 1 {
-        matrix::create::<T, R, R>(1, 1, |i, j|
-                                  num::from_int::<T>(1) / M.get(i, j))
+        create::<T, R>(1, 1, |i, j|
+                       num::from_int::<T>(1).unwrap() / M.get(i, j))
     }
     else {
         let N2 = N / 2;
@@ -149,7 +160,7 @@ pub fn inverse<T: Copy Send Num, M: Send BasicMatrix<T>, R: Copy Send BasicMatri
         // new C
         //error!("C");
         let Cn: R = mat_mul(&Dn, &CAi);
-        mat_x_inplace(&Cn, num::from_int(-1));
+        mat_x_inplace(&Cn, num::from_int(-1).unwrap());
 
         // new B
         //error!("B");
@@ -162,7 +173,7 @@ pub fn inverse<T: Copy Send Num, M: Send BasicMatrix<T>, R: Copy Send BasicMatri
         let mut An: R = mat_mul(&Bn, &CAi);
         An = mat_add(&Ai, &An);
 
-        mat_x_inplace(&Bn, num::from_int(-1));
+        mat_x_inplace(&Bn, num::from_int(-1).unwrap());
 
         // Stitch it all back together.
         let top: R = concat_cols(&An, &Bn);
@@ -171,7 +182,7 @@ pub fn inverse<T: Copy Send Num, M: Send BasicMatrix<T>, R: Copy Send BasicMatri
     }
 }
 
-pub fn cholesky_blocked<M: Send Copy BasicMatrix<float>, R: Send Copy BasicMatrix<float> Create<float, R>>(M: &M) -> R {
+pub fn cholesky_blocked<M: Send + BasicMatrix<f64>, R: Send + BasicMatrix<f64> + Create<f64, R>>(M: &M) -> R {
     /*
     A recursive blocked Cholesky factorization.
 
@@ -194,15 +205,15 @@ pub fn cholesky_blocked<M: Send Copy BasicMatrix<float>, R: Send Copy BasicMatri
 
     */
 
-    assert M.num_rows() == M.num_cols();
+    assert!(M.num_rows() == M.num_cols());
     let N = M.num_rows();
 
-    const BLOCK_SIZE: uint = 1;
+    static BLOCK_SIZE: uint = 1;
 
     if N <= BLOCK_SIZE {
         let M = convert(M);
-        cholesky_seq_inplace::<float, R>(&M);
-        move M
+        cholesky_seq_inplace::<R>(&M);
+        M
     }
     else {
         let N2 = N / 2;
@@ -219,11 +230,11 @@ pub fn cholesky_blocked<M: Send Copy BasicMatrix<float>, R: Send Copy BasicMatri
 
         let CAci: R = mat_mul(&C, &Aci);
 
-        let mut Dn: R = mat_mul(&CAci, &TransposeMatrix(&CAci));
+        let mut Dn: R = mat_mul::<f64, R, TransposeMatrix<f64, R>, R>(&CAci, &TransposeMatrix(&CAci));
         Dn = mat_sub(&D, &Dn);
         Dn = cholesky_blocked(&Dn);
 
-        let Z = zero_matrix::<float, R>(N2, N2a);
+        let Z = zero_matrix::<f64, R>(N2, N2a);
 
         let top: R = concat_cols(&Ac, &Z);
         let bot: R = concat_cols(&CAci, &Dn);
