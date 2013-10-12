@@ -18,10 +18,10 @@ pub fn dot<T: num::Num, L: Vector<T>, R: Vector<T>>(lhs: &L, rhs: &R) -> T {
 
     //error!("%? ### %?", lhs, rhs);
 
-        info!("a");
-        let a = lhs[0];
-        info!("b");
-        let b = rhs[0];
+    info!("a");
+    let a = lhs[0];
+    info!("b");
+    let b = rhs[0];
 
     let mut acc : T = a * b;
     for i in range(1, lhs.len()) {

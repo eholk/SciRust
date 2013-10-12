@@ -11,6 +11,12 @@ use matrix::algorithms::{concat_cols, concat_rows, convert,
                          mat_sub, mat_add, mat_x_inplace, transpose};
 use matrix::generate::{zero_matrix};
 
+use matrix::{BasicMatrix, SubMatrix, TransposeMatrix, Create, row, col};
+use matrix::algorithms::{concat_rows, concat_cols, dot, convert, mat_sub,
+                        mat_x_inplace, mat_add, cholesky_seq_inplace,
+                        transpose};
+use matrix::generate::{zero_matrix};
+
 // A parallel matrix creator.
 pub fn create<T: Send, M: Send + BasicMatrix<T> + Create<T, M>>
     (rows: uint, cols: uint, f: ~fn(uint, uint) -> T) -> M
