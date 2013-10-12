@@ -34,6 +34,8 @@ fn indent() -> ~str {
 }
 
 pub fn tracefn<T, U: ToStr>(m: U, f: &fn() -> T) -> T {
+    return f();
+
     let m = m.to_str();
     info!(indent() + m);
     local_data::modify(CUR_INDENT,
