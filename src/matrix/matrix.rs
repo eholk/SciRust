@@ -120,7 +120,7 @@ impl<T: Clone> BasicMatrix<T> for Matrix<T> {
             self.data[i * self.num_cols() + j].clone()
         }
         else {
-            fail!(fmt!("Index out of bounds. Index: %?, Dimension: %?",
+            fail!(format!("Index out of bounds. Index: {:?}, Dimension: {:?}",
                        (i, j),
                        (self.num_rows(), self.num_cols())))
         }
@@ -132,7 +132,7 @@ impl<T: Clone> BasicMatrix<T> for Matrix<T> {
             self.data[i * self.num_cols() + j] = x
         }
         else {
-            fail!(fmt!("Index out of bounds. Index: %?, Dimension: %?",
+            fail!(format!("Index out of bounds. Index: {:?}, Dimension: {:?}",
                        (i, j),
                        (self.num_rows(), self.num_cols())))
         }

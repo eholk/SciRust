@@ -1,5 +1,4 @@
 use std::num;
-use std::ops;
 
 use matrix::{BasicMatrix, Create, SubMatrix, 
              TransposeMatrix, Vector,
@@ -38,7 +37,7 @@ pub fn mat_mul<T: Num + num::FromPrimitive, LHS: BasicMatrix<T>, RHS: BasicMatri
                (lhs.num_rows(), lhs.num_cols()),
                (rhs.num_rows(), rhs.num_cols()))) {
     if lhs.num_cols() != rhs.num_rows() {
-        fail!(fmt!("Incompatible matrix sizes. LHS: %?, RHS: %?",
+        fail!(format!("Incompatible matrix sizes. LHS: {:?}, RHS: {:?}",
                    (lhs.num_rows(), lhs.num_cols()),
                    (rhs.num_rows(), rhs.num_cols())))
     }
@@ -72,7 +71,7 @@ fn subdivide<'a, T: Num, M: BasicMatrix<T>>(M: &'a M)
 pub fn mat_mul_blocked<T: Num + num::FromPrimitive, LHS: BasicMatrix<T>, RHS: BasicMatrix<T>, Res: BasicMatrix<T> + Create<T>> (lhs: &LHS, rhs: &RHS) -> Res
 {
     if lhs.num_cols() != rhs.num_rows() {
-        fail!(fmt!("Incompatible matrix sizes. LHS: %?, RHS: %?",
+        fail!(format!("Incompatible matrix sizes. LHS: {:?}, RHS: {:?}",
                    (lhs.num_rows(), lhs.num_cols()),
                    (rhs.num_rows(), rhs.num_cols())))
     }
@@ -141,7 +140,7 @@ pub fn mat_add<T: Num, LHS: BasicMatrix<T>, RHS: BasicMatrix<T>, Res: BasicMatri
 pub fn mat_sub<T: Num, LHS: BasicMatrix<T>, RHS: BasicMatrix<T>, Res: BasicMatrix<T> + Create<T>> (lhs: &LHS, rhs: &RHS) -> Res
 {
     if lhs.num_cols() != rhs.num_cols() || lhs.num_rows() != rhs.num_rows() {
-        fail!(fmt!("Incompatible matrix sizes. LHS: %?, RHS: %?",
+        fail!(format!("Incompatible matrix sizes. LHS: {:?}, RHS: {:?}",
                    (lhs.num_rows(), lhs.num_cols()),
                    (rhs.num_rows(), rhs.num_cols())))
     }
@@ -225,7 +224,7 @@ pub fn concat_rows<T, LHS: BasicMatrix<T>, RHS: BasicMatrix<T>, R: BasicMatrix<T
 }
 
 pub fn concat_cols<T, LHS: BasicMatrix<T>, RHS: BasicMatrix<T>, R: BasicMatrix<T> + Create<T>>(A: &LHS, B: &RHS) -> R {
-    //error!("concat: %?, %?",
+    //error!("concat: {:?}, {:?}",
     //       (A.num_rows(), A.num_cols()),
     //       (B.num_rows(), B.num_cols()));
            

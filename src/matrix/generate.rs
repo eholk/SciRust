@@ -2,7 +2,7 @@ use std::num::from_int;
 use std::rand;
 use std::rand::Rand;
 
-use matrix::{BasicMatrix, Create, Matrix, Ring};
+use matrix::{BasicMatrix, Create, Ring};
 
 pub fn identity<T: Ring, M: BasicMatrix<T> + Create<T>>(N: uint)
     -> M
