@@ -1,7 +1,7 @@
 use std::num;
 
 use matrix::{BasicMatrix, Create, SubMatrix, 
-             TransposeMatrix, Vector,
+             SubMatrix_t, TransposeMatrix, Vector,
              col, row};
 use matrix::generate::zero_matrix;
 use matrix::util::tracefn;
@@ -48,9 +48,10 @@ pub fn mat_mul<T: Num + num::FromPrimitive, LHS: BasicMatrix<T>, RHS: BasicMatri
 }
 
 // M -> (A, B, C, D)
-fn subdivide<'a, T: Num, M: BasicMatrix<T>>(M: &'a M)
-    -> (SubMatrix<'a, T, M>, SubMatrix<'a, T, M>,
-        SubMatrix<'a, T, M>, SubMatrix<'a, T, M>)
+fn subdivide<'a, T: Num, N: BasicMatrix<T>,
+             M: BasicMatrix<T> + SubMatrix<T, N>>
+            (M: &'a M)
+    -> (N, N, N, N)
 {
     let H = M.num_rows();
     let W = M.num_cols();
@@ -68,7 +69,13 @@ fn subdivide<'a, T: Num, M: BasicMatrix<T>>(M: &'a M)
     (A, B, C, D)
 }
 
-pub fn mat_mul_blocked<T: Num + num::FromPrimitive, LHS: BasicMatrix<T>, RHS: BasicMatrix<T>, Res: BasicMatrix<T> + Create<T>> (lhs: &LHS, rhs: &RHS) -> Res
+pub fn mat_mul_blocked
+<T: Num + num::FromPrimitive,
+SM: BasicMatrix<T>,
+LHS: BasicMatrix<T> + SubMatrix<T, SM>, RHS: BasicMatrix<T> + SubMatrix<T, SM>,
+Res: BasicMatrix<T> + Create<T> + SubMatrix<T, SM>>
+(lhs: &LHS, rhs: &RHS)
+ -> Res
 {
     if lhs.num_cols() != rhs.num_rows() {
         fail!(format!("Incompatible matrix sizes. LHS: {:?}, RHS: {:?}",
@@ -93,7 +100,7 @@ pub fn mat_mul_blocked<T: Num + num::FromPrimitive, LHS: BasicMatrix<T>, RHS: Ba
         let B: Res = convert(&B);
         let C: Res = convert(&C);
         let D: Res = convert(&D);
-
+        
         let E: Res = convert(&E);
         let F: Res = convert(&F);
         let G: Res = convert(&G);
@@ -246,7 +253,12 @@ pub fn convert<T, M: BasicMatrix<T>, R: BasicMatrix<T> + Create<T>>(M: &M) -> R 
     Create::<T>::create(M.num_rows(), M.num_cols(), |i, j| M.get(i, j))
 }
 
-pub fn inverse<T: Num + FromPrimitive, M: BasicMatrix<T>, R: BasicMatrix<T> + Create<T>>(M: &M) -> R {
+pub fn inverse
+<T: Num + FromPrimitive,
+SM1: BasicMatrix<T>,
+SM2: BasicMatrix<T>,
+M: BasicMatrix<T> + SubMatrix<T, SM1>,
+R: BasicMatrix<T> + Create<T> + SubMatrix<T, SM2>>(M: &M) -> R {
     // This basically does the blockwise inversion algorithm on the
     // Wikipedia page [1]. It's not a very efficient implementation,
     // since it ends up doing an absurd number of copies. It also
@@ -325,7 +337,11 @@ pub fn inverse<T: Num + FromPrimitive, M: BasicMatrix<T>, R: BasicMatrix<T> + Cr
     }
 }
 
-pub fn cholesky_blocked<M: BasicMatrix<f64>, R: BasicMatrix<f64> + Create<f64>>(M: &M) -> R {
+pub fn cholesky_blocked
+<SM: BasicMatrix<f64>, 
+M: BasicMatrix<f64> + SubMatrix<f64, SM>,
+R: BasicMatrix<f64> + Create<f64> + SubMatrix<f64, SM>>
+(M: &M) -> R {
     /*
     A recursive blocked Cholesky factorization.
 
@@ -371,7 +387,7 @@ pub fn cholesky_blocked<M: BasicMatrix<f64>, R: BasicMatrix<f64> + Create<f64>>(
 
         let Ac: R = cholesky_blocked(&A);
 
-        let Aci: R = inverse::<f64, TransposeMatrix<f64, R>, R>(&TransposeMatrix(&Ac));
+        let Aci: R = inverse::<f64, SubMatrix_t<f64,TransposeMatrix<f64,R>>, SM, TransposeMatrix<f64, R>, R>(&TransposeMatrix(&Ac));
 
         let CAci: R = mat_mul(&C, &Aci);
 

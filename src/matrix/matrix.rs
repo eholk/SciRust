@@ -158,61 +158,21 @@ impl<T: Clone> Create<T> for Matrix<T> {
     }
 }
 
-pub struct SubMatrix<'self, T, M> {
+pub struct SubMatrix_t<'self, T, M> {
     i: uint, j: uint,
     rows: uint, cols: uint,
     base: &'self M
 }
 
-/* // This is some type voodoo that might be nice later.
-
-trait RefineSubMatrix<T: Copy, M: BasicMatrix<T>> {
-    fn refine_submatrix(m: &self,
-                        i: uint, j: uint,
-                        rows: uint, cols: uint) -> SubMatrix<T, M>;
-}
-
-impl<T: Copy> Matrix<T>: RefineSubMatrix<T, Matrix<T>> {
-    fn refine_submatrix(m: &a/Matrix<T>,
-                        i: uint, j: uint,
-                        rows: uint, cols: uint)
-        -> SubMatrix/&a<T, Matrix<T>>
-    {
-        SubMatrix {
-            i: i, j: j, rows: rows, cols: cols, base: m
-        }        
-    }
-}
-
-impl<T: Copy, M: BasicMatrix<T>> SubMatrix<T, M>: RefineSubMatrix<T, M> {
-    fn refine_submatrix(m: &a/SubMatrix<T, M>,
-                        i: uint, j: uint,
-                        rows: uint, cols: uint)
-        -> SubMatrix/&a<T, M>
-    {
-        SubMatrix {
-            i: i, j: j, rows: rows, cols: cols, base: m.base
-        }        
-    }    
-}
-
-fn SubMatrix<T: Copy, M: BasicMatrix<T> RefineSubMatrix<T, M>>(m: &a/M,
-                                                               i: uint,
-                                                               j: uint,
-                                                               rows: uint,
-                                                               cols: uint)
-    -> SubMatrix/&a<T, M>
-{
-    m.refine_submatrix(m, i, j, rows, cols)
-}
-*/
-
-pub fn SubMatrix<'a, T, M: BasicMatrix<T>>(m: &'a M,
-                                         i: uint,
-                                         j: uint,
-                                         rows: uint,
-                                         cols: uint)
-    -> SubMatrix<'a, T, M>
+pub fn SubMatrix
+<'a, T, SM: BasicMatrix<T>,
+ M: BasicMatrix<T> + SubMatrix<T, SM>>
+(m: &'a M,
+ i: uint,
+ j: uint,
+ rows: uint,
+ cols: uint)
+ -> SM
 {
     assert!(rows > 0);
     assert!(cols > 0);
@@ -220,12 +180,10 @@ pub fn SubMatrix<'a, T, M: BasicMatrix<T>>(m: &'a M,
     assert!(j < m.num_cols());
     assert!(i + rows <= m.num_rows());
     assert!(j + cols <= m.num_cols());
-    SubMatrix {
-        i: i, j: j, rows: rows, cols: cols, base: m
-    }        
+    m.submatrix(i, j, rows, cols)
 }
 
-impl<'self, T, M: BasicMatrix<T>> BasicMatrix<T> for SubMatrix<'self, T, M> {
+impl<'self, T, M: BasicMatrix<T>> BasicMatrix<T> for SubMatrix_t<'self, T, M> {
     fn num_rows(&self) -> uint { self.rows }
     fn num_cols(&self) -> uint { self.cols }
 
@@ -250,6 +208,30 @@ impl<'self, T, M: BasicMatrix<T>> BasicMatrix<T> for SubMatrix<'self, T, M> {
     }
 }
 
+trait SubMatrix<T, M: BasicMatrix<T>> : BasicMatrix<T> {
+    fn submatrix(&self,
+                 i: uint, j: uint,
+                 rows: uint, cols: uint) -> M;
+}
+
+impl<'self, T, M: BasicMatrix<T>> SubMatrix<T, SubMatrix_t<'self, T, M>>
+for SubMatrix_t<'self, T, M> {
+    fn submatrix(&self,
+                 i: uint, j: uint,
+                 rows: uint, cols: uint)
+                 -> SubMatrix_t<'self, T, M> {
+        assert!(rows > 0);
+        assert!(cols > 0);
+        assert!(i < self.num_rows());
+        assert!(j < self.num_cols());
+        assert!(i + rows <= self.num_rows());
+        assert!(j + cols <= self.num_cols());
+        SubMatrix_t {
+            i: i, j: j, rows: rows, cols: cols, base: self.base
+        }
+    }
+}
+
 pub struct TransposeMatrix<'self, T, M>(&'self M);
 
 impl<'self, T, M> TransposeMatrix<'self, T, M> {
@@ -262,6 +244,25 @@ impl<'self, T, M> TransposeMatrix<'self, T, M> {
     fn get_mut(&mut self) -> &'self mut M {
         match self {
             &TransposeMatrix(m) => unsafe { cast::transmute_mut(m) }
+        }
+    }
+}
+
+impl<'self, T, M: BasicMatrix<T>>
+SubMatrix<T, SubMatrix_t<'self, T, TransposeMatrix<'self, T, M>>>
+for TransposeMatrix<'self, T, M> {
+    fn submatrix(&self,
+                 i: uint, j: uint,
+                 rows: uint, cols: uint)
+                 -> SubMatrix_t<'self, T, TransposeMatrix<'self, T, M>> {
+        assert!(rows > 0);
+        assert!(cols > 0);
+        assert!(i < self.num_rows());
+        assert!(j < self.num_cols());
+        assert!(i + rows <= self.num_rows());
+        assert!(j + cols <= self.num_cols());
+        SubMatrix_t {
+            i: i, j: j, rows: rows, cols: cols, base: self
         }
     }
 }
