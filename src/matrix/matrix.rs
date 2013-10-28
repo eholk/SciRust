@@ -26,6 +26,12 @@ pub trait BasicMatrix<T> {
 
     fn num_rows(&self) -> uint;
     fn num_cols(&self) -> uint;
+
+    #[lang="index"]
+    fn index(&self, ix: &(uint, uint)) -> T {
+        let &(i, j) = ix;
+        self.get(i, j)
+    }
 }
 
 pub trait Create<T> {
@@ -163,49 +169,6 @@ pub struct SubMatrix<'self, T, M> {
     rows: uint, cols: uint,
     base: &'self M
 }
-
-/* // This is some type voodoo that might be nice later.
-
-trait RefineSubMatrix<T: Copy, M: BasicMatrix<T>> {
-    fn refine_submatrix(m: &self,
-                        i: uint, j: uint,
-                        rows: uint, cols: uint) -> SubMatrix<T, M>;
-}
-
-impl<T: Copy> Matrix<T>: RefineSubMatrix<T, Matrix<T>> {
-    fn refine_submatrix(m: &a/Matrix<T>,
-                        i: uint, j: uint,
-                        rows: uint, cols: uint)
-        -> SubMatrix/&a<T, Matrix<T>>
-    {
-        SubMatrix {
-            i: i, j: j, rows: rows, cols: cols, base: m
-        }        
-    }
-}
-
-impl<T: Copy, M: BasicMatrix<T>> SubMatrix<T, M>: RefineSubMatrix<T, M> {
-    fn refine_submatrix(m: &a/SubMatrix<T, M>,
-                        i: uint, j: uint,
-                        rows: uint, cols: uint)
-        -> SubMatrix/&a<T, M>
-    {
-        SubMatrix {
-            i: i, j: j, rows: rows, cols: cols, base: m.base
-        }        
-    }    
-}
-
-fn SubMatrix<T: Copy, M: BasicMatrix<T> RefineSubMatrix<T, M>>(m: &a/M,
-                                                               i: uint,
-                                                               j: uint,
-                                                               rows: uint,
-                                                               cols: uint)
-    -> SubMatrix/&a<T, M>
-{
-    m.refine_submatrix(m, i, j, rows, cols)
-}
-*/
 
 pub fn SubMatrix<'a, T, M: BasicMatrix<T>>(m: &'a M,
                                          i: uint,

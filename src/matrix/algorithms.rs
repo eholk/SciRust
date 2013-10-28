@@ -89,40 +89,42 @@ pub fn mat_mul_blocked<T: Num + num::FromPrimitive, LHS: BasicMatrix<T>, RHS: Ba
         let (A, B, C, D) = subdivide(lhs);
         let (E, F, G, H) = subdivide(rhs);
 
-        let A: Res = convert(&A);
-        let B: Res = convert(&B);
-        let C: Res = convert(&C);
-        let D: Res = convert(&D);
+        let mut res: Res = Create::<T>::create(lhs.num_rows(), rhs.num_cols(),
+                                      |_, _| FromPrimitive::from_int(0).unwrap());
+        {
+            let (mut An, mut Bn, mut Cn, mut Dn) = subdivide(&res);
 
-        let E: Res = convert(&E);
-        let F: Res = convert(&F);
-        let G: Res = convert(&G);
-        let H: Res = convert(&H);
+            let A: Res = convert(&A);
+            let B: Res = convert(&B);
+            let C: Res = convert(&C);
+            let D: Res = convert(&D);
 
-        let AE: Res = mat_mul_blocked(&A, &E);
-        let BG: Res = mat_mul_blocked(&B, &G);
+            let E: Res = convert(&E);
+            let F: Res = convert(&F);
+            let G: Res = convert(&G);
+            let H: Res = convert(&H);
 
-        let An: Res = mat_add(&AE, &BG);
+            let AE: Res = mat_mul_blocked(&A, &E);
+            let BG: Res = mat_mul_blocked(&B, &G);
 
-        let AF: Res = mat_mul_blocked(&A, &F);
-        let BH: Res = mat_mul_blocked(&B, &H);
+            mat_add_into(&mut An, &AE, &BG);
 
-        let Bn: Res = mat_add(&AF, &BH);
+            let AF: Res = mat_mul_blocked(&A, &F);
+            let BH: Res = mat_mul_blocked(&B, &H);
 
-        let CE: Res = mat_mul_blocked(&C, &E);
-        let DG: Res = mat_mul_blocked(&D, &G);
+            mat_add_into(&mut Bn, &AF, &BH);
 
-        let Cn: Res = mat_add(&CE, &DG);
+            let CE: Res = mat_mul_blocked(&C, &E);
+            let DG: Res = mat_mul_blocked(&D, &G);
 
-        let CF: Res = mat_mul_blocked(&C, &F);
-        let DH: Res = mat_mul_blocked(&D, &H);
+            mat_add_into(&mut Cn, &CE, &DG);
 
-        let Dn: Res = mat_add(&CF, &DH);
+            let CF: Res = mat_mul_blocked(&C, &F);
+            let DH: Res = mat_mul_blocked(&D, &H);
 
-        let top: Res = concat_cols(&An, &Bn);
-        let bot: Res = concat_cols(&Cn, &Dn);
-
-        concat_rows(&top, &bot)
+            mat_add_into(&mut Dn, &CF, &DH);
+        }
+        res
     }
 }
 
@@ -134,6 +136,24 @@ pub fn mat_add<T: Num, LHS: BasicMatrix<T>, RHS: BasicMatrix<T>, Res: BasicMatri
 
     do Create::<T>::create(lhs.num_rows(), rhs.num_cols()) |i, j| {
         lhs.get(i, j) + rhs.get(i, j)
+    }
+}
+
+pub fn mat_add_inplace<T: Num, LHS: BasicMatrix<T>, RHS: BasicMatrix<T>>
+(lhs: &mut LHS, rhs: &RHS) {
+    do for_each(lhs) |i, j, x| {
+        x + rhs[(i, j)]
+    }
+}
+
+pub fn mat_add_into<T: Num, Dest: BasicMatrix<T>, LHS: BasicMatrix<T>, RHS: BasicMatrix<T>>
+(dest: &mut Dest, lhs: &LHS, rhs: &RHS) {
+    assert!(dest.num_rows() == lhs.num_rows());
+    assert!(dest.num_cols() == lhs.num_cols());
+    assert!(lhs.num_rows() == rhs.num_rows());
+    assert!(lhs.num_cols() == rhs.num_cols());
+    do for_each(dest) |i, j, _| {
+        lhs[(i, j)] + rhs[(i, j)]
     }
 }
 
@@ -313,7 +333,7 @@ pub fn inverse<T: Num + FromPrimitive, M: BasicMatrix<T>, R: BasicMatrix<T> + Cr
         // new A
         //error!("A");
         let mut An: R = mat_mul(&Bn, &CAi);
-        An = mat_add(&Ai, &An);
+        mat_add_inplace(&mut An, &Ai);
 
         mat_x_inplace(&mut Bn, num::from_int(-1).unwrap());
 
