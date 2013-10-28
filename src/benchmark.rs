@@ -1,5 +1,7 @@
 extern mod extra;
 
+use extra::arc::Arc;
+
 // This version makes ICE
 //extern mod SciRust;
 //use SciRust::matrix;
@@ -12,6 +14,7 @@ use matrix::algorithms::{dot, mat_mul, transpose, cholesky_seq_inplace,
                         inverse, cholesky_blocked, mat_mul_blocked,
                         convert};
 use matrix::util::to_str;
+use matrix::par;
 
 // We'll settle for this for now.
 #[path="matrix/matrix.rs"]
@@ -44,6 +47,16 @@ fn benchmark(N: uint) {
     let stop = precise_time_s();
     
     println!("Matrix Multiply (blocked): {:?}s", stop - start);
+
+    let Ls: M = convert(&L);
+    let Ls = Arc::new(Ls);
+    let Lts: M = convert(&Lt);
+    let Lts = Arc::new(Lts);
+
+    let start = precise_time_s();
+    let Ap: M = par::mat_mul(&Ls, &Lts);
+    let stop = precise_time_s();
+    println!("Matrix Multiply (parallel): {:?}s", stop - start);
 
     let start = precise_time_s();
     let Ai: M = inverse(&A);

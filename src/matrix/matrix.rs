@@ -8,6 +8,7 @@ use std::vec;
 pub mod algorithms;
 pub mod generate;
 pub mod util;
+pub mod par;
 
 // Sort of corresponds to the abstract algebra notion of a ring.
 pub trait Ring : ops::Add<Self, Self> + ops::Mul<Self, Self> + FromPrimitive{

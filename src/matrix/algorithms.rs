@@ -89,8 +89,8 @@ pub fn mat_mul_blocked<T: Num + num::FromPrimitive, LHS: BasicMatrix<T>, RHS: Ba
         let (A, B, C, D) = subdivide(lhs);
         let (E, F, G, H) = subdivide(rhs);
 
-        let mut res: Res = Create::<T>::create(lhs.num_rows(), rhs.num_cols(),
-                                      |_, _| FromPrimitive::from_int(0).unwrap());
+        let res: Res = Create::<T>::create(lhs.num_rows(), rhs.num_cols(),
+                                           |_, _| FromPrimitive::from_int(0).unwrap());
         {
             let (mut An, mut Bn, mut Cn, mut Dn) = subdivide(&res);
 
