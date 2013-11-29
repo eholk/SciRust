@@ -46,34 +46,48 @@ pub fn sub_mul<T: Num + FromPrimitive, LHS: BasicMatrix<T> + Send + Clone, RHS: 
         let lhsc = lhs.clone();
         let rhsc = rhs.clone();
         let AE: Future<Res> 
-            = Future::spawn(|| sub_mul(lhsc.clone(), A, rhsc.clone(), E));
+            = Future::spawn(proc() {
+                sub_mul(lhsc.clone(), A, rhsc.clone(), E)
+            });
         let lhsc = lhs.clone();
         let rhsc = rhs.clone();
         let BG: Future<Res> 
-            = Future::spawn(|| sub_mul(lhsc.clone(), B, rhsc.clone(), G));
+            = Future::spawn(proc() {
+                sub_mul(lhsc.clone(), B, rhsc.clone(), G)
+            });
         let lhsc = lhs.clone();
         let rhsc = rhs.clone();
         let AF: Future<Res> 
-            = Future::spawn(|| sub_mul(lhsc.clone(), A, rhsc.clone(), F));
+            = Future::spawn(proc() {
+                sub_mul(lhsc.clone(), A, rhsc.clone(), F)
+            });
         let lhsc = lhs.clone();
         let rhsc = rhs.clone();
         let BH: Future<Res> 
-            = Future::spawn(|| sub_mul(lhsc.clone(), B, rhsc.clone(), H));
+            = Future::spawn(proc() {
+                sub_mul(lhsc.clone(), B, rhsc.clone(), H)
+            });
 
         let lhsc = lhs.clone();
         let rhsc = rhs.clone();
         let CE: Future<Res> 
-            = Future::spawn(|| sub_mul(lhsc.clone(), C, rhsc.clone(), E));
+            = Future::spawn(proc() {
+                sub_mul(lhsc.clone(), C, rhsc.clone(), E)
+            });
         let lhsc = lhs.clone();
         let rhsc = rhs.clone();
         let DG: Future<Res> 
-            = Future::spawn(|| sub_mul(lhsc.clone(), D, rhsc.clone(), G));
+            = Future::spawn(proc() {
+                sub_mul(lhsc.clone(), D, rhsc.clone(), G)
+            });
         let lhsc = lhs.clone();
         let rhsc = rhs.clone();
         let CF: Future<Res> 
-            = Future::spawn(|| sub_mul(lhsc.clone(), C, rhsc.clone(), F));
+            = Future::spawn(proc() {
+                sub_mul(lhsc.clone(), C, rhsc.clone(), F)
+            });
         let DH: Future<Res> 
-            = Future::spawn(|| sub_mul(lhs.clone(), D, rhs.clone(), H));
+            = Future::spawn(proc() sub_mul(lhs.clone(), D, rhs.clone(), H));
         
         let mut An = AE.unwrap();
         mat_add_inplace(&mut An, &BG.unwrap());
@@ -98,7 +112,7 @@ impl<T, M: BasicMatrix<T> + Send + Freeze> BasicMatrix<T> for Arc<M> {
         self.get().get(i, j)
     }
 
-    fn set(&mut self, i: uint, j: uint, x: T) {
+    fn set(&mut self, _i: uint, _j: uint, _x: T) {
         fail!("Attempting to mutate shared matrix.");
     }
 

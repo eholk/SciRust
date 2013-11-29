@@ -8,12 +8,11 @@ use extra::arc::Arc;
 
 use extra::time::precise_time_s;
 
-use matrix::{Matrix, TransposeMatrix, Create};
-use matrix::generate::{identity, rand_L1};
-use matrix::algorithms::{dot, mat_mul, transpose, cholesky_seq_inplace,
+use matrix::{Matrix, TransposeMatrix};
+use matrix::generate::{rand_L1};
+use matrix::algorithms::{mat_mul, cholesky_seq_inplace,
                         inverse, cholesky_blocked, mat_mul_blocked,
                         convert};
-use matrix::util::to_str;
 use matrix::par;
 
 // We'll settle for this for now.
@@ -43,7 +42,7 @@ fn benchmark(N: uint) {
     // TODO: make sure A and Ap agree.
 
     let start = precise_time_s();
-    let Ab: M = mat_mul_blocked(&L, &Lt);
+    let _Ab: M = mat_mul_blocked(&L, &Lt);
     let stop = precise_time_s();
     
     println!("Matrix Multiply (blocked): {:?}s", stop - start);
@@ -54,12 +53,12 @@ fn benchmark(N: uint) {
     let Lts = Arc::new(Lts);
 
     let start = precise_time_s();
-    let Ap: M = par::mat_mul(&Ls, &Lts);
+    let _Ap: M = par::mat_mul(&Ls, &Lts);
     let stop = precise_time_s();
     println!("Matrix Multiply (parallel): {:?}s", stop - start);
 
     let start = precise_time_s();
-    let Ai: M = inverse(&A);
+    let _Ai: M = inverse(&A);
     let stop = precise_time_s();
     
     println!("Matrix Inverse: {:?}s", stop - start);
@@ -78,7 +77,7 @@ fn benchmark(N: uint) {
     println!("Cholesky (sequential): {:?}s", stop - start);
 
     let start = precise_time_s();
-    let Ac: M = cholesky_blocked(&A);
+    let _Ac: M = cholesky_blocked(&A);
     let stop = precise_time_s();
 
     println!("Cholesky (blocked): {:?}s", stop - start);   

@@ -7,14 +7,14 @@ use matrix::{BasicMatrix, Create, Ring};
 pub fn identity<T: Ring, M: BasicMatrix<T> + Create<T>>(N: uint)
     -> M
 {
-    do Create::<T>::create(N, N) |i, j| {
+    Create::<T>::create(N, N, |i, j| {
         if i == j {
             Ring::one()
         }
         else {
             Ring::zero()
         }
-    }
+    })
 }
 
 // Generate a random square lower triangular matrix with unit diagonal.
@@ -22,7 +22,7 @@ pub fn rand_L1<T: Rand + FromPrimitive, M: BasicMatrix<T> + Create<T>>(N: uint)
     -> M {
     let mut r = rand::rng();
 
-    do Create::create(N, N) |i, j| {
+    Create::create(N, N, |i, j| {
         if i == j {
             from_int::<T>(1).unwrap()
         }
@@ -32,7 +32,7 @@ pub fn rand_L1<T: Rand + FromPrimitive, M: BasicMatrix<T> + Create<T>>(N: uint)
         else {
             from_int(0).unwrap()
         }
-    }
+    })
 }
 
 pub fn zero_matrix<T: Ring, M: BasicMatrix<T> + Create<T>>

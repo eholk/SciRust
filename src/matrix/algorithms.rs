@@ -4,12 +4,8 @@ use matrix::{BasicMatrix, Create, SubMatrix,
              TransposeMatrix, Vector,
              col, row};
 use matrix::generate::zero_matrix;
-use matrix::util::tracefn;
-
-//pub mod par;
 
 pub fn dot<T: num::Num, L: Vector<T>, R: Vector<T>>(lhs: &L, rhs: &R) -> T {
-    do tracefn(("dot", lhs.len(), rhs.len())) {
     assert!(lhs.len() > 0)
     if lhs.len() != rhs.len() {
         fail!(~"Invalid vector lengths.")
@@ -28,14 +24,10 @@ pub fn dot<T: num::Num, L: Vector<T>, R: Vector<T>>(lhs: &L, rhs: &R) -> T {
     }
 
     acc
-    }
 }
 
 pub fn mat_mul<T: Num + num::FromPrimitive, LHS: BasicMatrix<T>, RHS: BasicMatrix<T>, Res: BasicMatrix<T> + Create<T>> (lhs: &LHS, rhs: &RHS) -> Res
 {
-    do tracefn(("mat_mul",
-               (lhs.num_rows(), lhs.num_cols()),
-               (rhs.num_rows(), rhs.num_cols()))) {
     if lhs.num_cols() != rhs.num_rows() {
         fail!(format!("Incompatible matrix sizes. LHS: {:?}, RHS: {:?}",
                    (lhs.num_rows(), lhs.num_cols()),
@@ -44,7 +36,6 @@ pub fn mat_mul<T: Num + num::FromPrimitive, LHS: BasicMatrix<T>, RHS: BasicMatri
 
     Create::<T>::create(lhs.num_rows(), rhs.num_cols(),
                         |i, j| dot(&row(lhs, i), &col(rhs, j)))
-    }
 }
 
 // M -> (A, B, C, D)
@@ -134,16 +125,16 @@ pub fn mat_add<T: Num, LHS: BasicMatrix<T>, RHS: BasicMatrix<T>, Res: BasicMatri
         fail!(~"Incompatible matrix sizes")
     }
 
-    do Create::<T>::create(lhs.num_rows(), rhs.num_cols()) |i, j| {
+    Create::<T>::create(lhs.num_rows(), rhs.num_cols(), |i, j| {
         lhs.get(i, j) + rhs.get(i, j)
-    }
+    })
 }
 
 pub fn mat_add_inplace<T: Num, LHS: BasicMatrix<T>, RHS: BasicMatrix<T>>
 (lhs: &mut LHS, rhs: &RHS) {
-    do for_each(lhs) |i, j, x| {
+    for_each(lhs, |i, j, x| {
         x + rhs[(i, j)]
-    }
+    })
 }
 
 pub fn mat_add_into<T: Num, Dest: BasicMatrix<T>, LHS: BasicMatrix<T>, RHS: BasicMatrix<T>>
@@ -152,9 +143,9 @@ pub fn mat_add_into<T: Num, Dest: BasicMatrix<T>, LHS: BasicMatrix<T>, RHS: Basi
     assert!(dest.num_cols() == lhs.num_cols());
     assert!(lhs.num_rows() == rhs.num_rows());
     assert!(lhs.num_cols() == rhs.num_cols());
-    do for_each(dest) |i, j, _| {
+    for_each(dest, |i, j, _| {
         lhs[(i, j)] + rhs[(i, j)]
-    }
+    })
 }
 
 pub fn mat_sub<T: Num, LHS: BasicMatrix<T>, RHS: BasicMatrix<T>, Res: BasicMatrix<T> + Create<T>> (lhs: &LHS, rhs: &RHS) -> Res
@@ -165,9 +156,9 @@ pub fn mat_sub<T: Num, LHS: BasicMatrix<T>, RHS: BasicMatrix<T>, Res: BasicMatri
                    (rhs.num_rows(), rhs.num_cols())))
     }
 
-    do Create::<T>::create(lhs.num_rows(), rhs.num_cols()) |i, j| {
+    Create::<T>::create(lhs.num_rows(), rhs.num_cols(), |i, j| {
         lhs.get(i, j) - rhs.get(i, j)
-    }
+    })
 }
 
 pub fn mat_x_inplace<T: Num, M: BasicMatrix<T>>(A: &mut M, x: T) {
@@ -175,9 +166,9 @@ pub fn mat_x_inplace<T: Num, M: BasicMatrix<T>>(A: &mut M, x: T) {
 }
 
 pub fn transpose<T, M: BasicMatrix<T>, R: BasicMatrix<T> + Create<T>>(m: &M) -> R {
-    do Create::<T>::create(m.num_cols(), m.num_rows()) |i, j| {
+    Create::<T>::create(m.num_cols(), m.num_rows(), |i, j| {
         m.get(j, i)
-    }
+    })
 }
 
 pub fn cholesky_seq_inplace_raw<M: BasicMatrix<f64>>(A: &mut M, start: uint) {
@@ -204,7 +195,7 @@ pub fn cholesky_seq_inplace_raw<M: BasicMatrix<f64>>(A: &mut M, start: uint) {
     }
 }
 
-pub fn for_each<T, M: BasicMatrix<T>>(A: &mut M, f: &fn(uint, uint, T) -> T) {
+pub fn for_each<T, M: BasicMatrix<T>>(A: &mut M, f: |uint, uint, T| -> T) {
     for i in range(0, A.num_rows()) {
         for j in range(0, A.num_cols()) {
             let old = A.get(i, j);
@@ -233,14 +224,14 @@ pub fn concat_rows<T, LHS: BasicMatrix<T>, RHS: BasicMatrix<T>, R: BasicMatrix<T
     assert!(A.num_cols() == B.num_cols());
 
     let N = A.num_rows();
-    do Create::<T>::create(N + B.num_rows(), A.num_cols()) |i, j| {
+    Create::<T>::create(N + B.num_rows(), A.num_cols(), |i, j| {
         if i < N {
             A.get(i, j)
         }
         else {
             B.get(i - N, j)
         }
-    }
+    })
 }
 
 pub fn concat_cols<T, LHS: BasicMatrix<T>, RHS: BasicMatrix<T>, R: BasicMatrix<T> + Create<T>>(A: &LHS, B: &RHS) -> R {
@@ -252,14 +243,14 @@ pub fn concat_cols<T, LHS: BasicMatrix<T>, RHS: BasicMatrix<T>, R: BasicMatrix<T
 
     let N = A.num_cols();
 
-    do Create::<T>::create(B.num_rows(), N + B.num_cols()) |i, j| {
+    Create::<T>::create(B.num_rows(), N + B.num_cols(), |i, j| {
         if j < N {
             A.get(i, j)
         }
         else {
             B.get(i, j - N)
         }
-    }
+    })
 }
 
 pub fn convert<T, M: BasicMatrix<T>, R: BasicMatrix<T> + Create<T>>(M: &M) -> R {
@@ -278,8 +269,6 @@ pub fn inverse<T: Num + FromPrimitive, M: BasicMatrix<T>, R: BasicMatrix<T> + Cr
     assert!(M.num_rows() == M.num_cols());
 
     let N = M.num_rows();
-
-    do tracefn(("inverse", N)) {
 
     if N == 1 {
         Create::<T>::create(1, 1, |i, j| num::from_int::<T>(1).unwrap() / M.get(i, j))
@@ -342,7 +331,6 @@ pub fn inverse<T: Num + FromPrimitive, M: BasicMatrix<T>, R: BasicMatrix<T> + Cr
         let bot: R = concat_cols(&Cn, &Dn);
         concat_rows(&top, &bot)
     }
-    }
 }
 
 pub fn cholesky_blocked<M: BasicMatrix<f64>, R: BasicMatrix<f64> + Create<f64>>(M: &M) -> R {
@@ -370,8 +358,6 @@ pub fn cholesky_blocked<M: BasicMatrix<f64>, R: BasicMatrix<f64> + Create<f64>>(
 
     assert!(M.num_rows() == M.num_cols());
     let N = M.num_rows();
-
-    do tracefn(("cholesky_blocked", N)) {
 
     static BLOCK_SIZE: uint = 1;
 
@@ -405,6 +391,5 @@ pub fn cholesky_blocked<M: BasicMatrix<f64>, R: BasicMatrix<f64> + Create<f64>>(
         let bot: R = concat_cols(&CAci, &Dn);
 
         concat_rows(&top, &bot)
-    }
     }
 }

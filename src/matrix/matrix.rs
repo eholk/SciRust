@@ -36,7 +36,7 @@ pub trait BasicMatrix<T> {
 }
 
 pub trait Create<T> {
-    fn create(uint, uint, &fn(uint, uint) -> T) -> Self;
+    fn create(uint, uint, |uint, uint| -> T) -> Self;
 }
 
 pub trait Vector<T> : ops::Index<uint, T> {
@@ -150,17 +150,17 @@ impl<T: Clone> BasicMatrix<T> for Matrix<T> {
 }
 
 impl<T: Clone> Create<T> for Matrix<T> {
-    fn create(i: uint, j: uint, init: &fn(uint, uint) -> T)
+    fn create(i: uint, j: uint, init: |uint, uint| -> T)
         -> Matrix<T>
     {
         Matrix {
             rows: i,
             cols: j,
-            data: do vec::from_fn(i * j) |k| {
+            data: vec::from_fn(i * j, |k| {
                 let i = k / j;
                 let j = k % j;
                 init(i, j)
-            }
+            })
         }
     }
 }
