@@ -46,12 +46,12 @@ pub trait Vector<T> : ops::Index<uint, T> {
 }
 
 // Row and Column Vectors (Views into existing matrices)
-struct RowVector<'self, T, M> {
+struct RowVector<'r, T, M> {
     i: uint,
-    base: &'self M
+    base: &'r M
 }
 
-impl<'self, T, M: BasicMatrix<T>> Vector<T> for RowVector<'self, T, M> {
+impl<'r, T, M: BasicMatrix<T>> Vector<T> for RowVector<'r, T, M> {
     fn len(&self) -> uint { self.base.num_cols() }
     #[inline(always)]
     fn get(&self, j: uint) -> T { self.base.get(self.i, j) }
@@ -59,17 +59,17 @@ impl<'self, T, M: BasicMatrix<T>> Vector<T> for RowVector<'self, T, M> {
     fn set(&mut self, j: uint, x: T) { self.base.set(self.i, j, x) }
 }
 
-impl<'self, T, M: BasicMatrix<T>> ops::Index<uint, T> for RowVector<'self, T, M> {
+impl<'r, T, M: BasicMatrix<T>> ops::Index<uint, T> for RowVector<'r, T, M> {
     #[inline(always)]
     fn index(&self, i: &uint) -> T { self.get(*i) }
 }
 
-struct ColumnVector<'self, T, M> {
+struct ColumnVector<'r, T, M> {
     j: uint,
-    base: &'self M
+    base: &'r M
 }
 
-impl<'self, T, M: BasicMatrix<T>> Vector<T> for ColumnVector<'self, T, M> {
+impl<'r, T, M: BasicMatrix<T>> Vector<T> for ColumnVector<'r, T, M> {
     fn len(&self) -> uint { self.base.num_rows() }
     #[inline(always)]
     fn get(&self, i: uint) -> T { self.base.get(i, self.j) }
@@ -77,12 +77,12 @@ impl<'self, T, M: BasicMatrix<T>> Vector<T> for ColumnVector<'self, T, M> {
     fn set(&mut self, i: uint, x: T) { self.base.set(i, self.j, x) }
 }
 
-impl<'self, T, M: BasicMatrix<T>> ops::Index<uint, T> for ColumnVector<'self, T, M> {
+impl<'r, T, M: BasicMatrix<T>> ops::Index<uint, T> for ColumnVector<'r, T, M> {
     #[inline(always)]
     fn index(&self, i: &uint) -> T { self.get(*i) }
 }
 
-impl<'self, T, M: BasicMatrix<T>> BasicMatrix<T> for &'self M {
+impl<'r, T, M: BasicMatrix<T>> BasicMatrix<T> for &'r M {
     fn get(&self, i: uint, j: uint) -> T {
         self.get(i, j)
     }
@@ -165,10 +165,10 @@ impl<T: Clone> Create<T> for Matrix<T> {
     }
 }
 
-pub struct SubMatrix<'self, T, M> {
+pub struct SubMatrix<'r, T, M> {
     i: uint, j: uint,
     rows: uint, cols: uint,
-    base: &'self M
+    base: &'r M
 }
 
 pub fn SubMatrix<'a, T, M: BasicMatrix<T>>(m: &'a M,
@@ -189,7 +189,7 @@ pub fn SubMatrix<'a, T, M: BasicMatrix<T>>(m: &'a M,
     }        
 }
 
-impl<'self, T, M: BasicMatrix<T>> BasicMatrix<T> for SubMatrix<'self, T, M> {
+impl<'r, T, M: BasicMatrix<T>> BasicMatrix<T> for SubMatrix<'r, T, M> {
     fn num_rows(&self) -> uint { self.rows }
     fn num_cols(&self) -> uint { self.cols }
 
@@ -214,23 +214,23 @@ impl<'self, T, M: BasicMatrix<T>> BasicMatrix<T> for SubMatrix<'self, T, M> {
     }
 }
 
-pub struct TransposeMatrix<'self, T, M>(&'self M);
+pub struct TransposeMatrix<'r, T, M>(&'r M);
 
-impl<'self, T, M> TransposeMatrix<'self, T, M> {
-    fn get_ref(&self) -> &'self M {
+impl<'r, T, M> TransposeMatrix<'r, T, M> {
+    fn get_ref(&self) -> &'r M {
         match *self {
             TransposeMatrix(m) => m
         }
     }
 
-    fn get_mut(&mut self) -> &'self mut M {
+    fn get_mut(&mut self) -> &'r mut M {
         match self {
             &TransposeMatrix(m) => unsafe { cast::transmute_mut(m) }
         }
     }
 }
 
-impl<'self, T, M: BasicMatrix<T>> BasicMatrix<T> for TransposeMatrix<'self, T, M> {
+impl<'r, T, M: BasicMatrix<T>> BasicMatrix<T> for TransposeMatrix<'r, T, M> {
     fn num_rows(&self) -> uint { 
         self.get_ref().num_cols()
     }
