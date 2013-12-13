@@ -216,6 +216,10 @@ impl<'r, T, M: BasicMatrix<T>> BasicMatrix<T> for SubMatrix<'r, T, M> {
 
 pub struct TransposeMatrix<'r, T, M>(&'r M);
 
+pub fn transpose<'r, T, M>(m: &'r M) -> TransposeMatrix<'r, T, M> {
+    TransposeMatrix(m)
+}
+
 impl<'r, T, M> TransposeMatrix<'r, T, M> {
     fn get_ref(&self) -> &'r M {
         match *self {

@@ -4,3 +4,5 @@
 *.so
 src/benchmark
 .rust
+build
+bin

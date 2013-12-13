@@ -1,14 +1,13 @@
 extern mod extra;
+extern mod SciRust;
 
 use extra::arc::Arc;
 
-// This version makes ICE
-//extern mod SciRust;
-//use SciRust::matrix;
+use SciRust::matrix;
 
 use extra::time::precise_time_s;
 
-use matrix::{Matrix, TransposeMatrix};
+use matrix::{Matrix, TransposeMatrix, transpose};
 use matrix::generate::{rand_L1};
 use matrix::algorithms::{mat_mul, cholesky_seq_inplace,
                         inverse, cholesky_blocked, mat_mul_blocked,
@@ -16,8 +15,8 @@ use matrix::algorithms::{mat_mul, cholesky_seq_inplace,
 use matrix::par;
 
 // We'll settle for this for now.
-#[path="matrix/matrix.rs"]
-mod matrix;
+//#[path="matrix/matrix.rs"]
+//mod matrix;
 
 type M = Matrix<f64>;
 
@@ -25,7 +24,7 @@ fn benchmark(N: uint) {
     println!("Benchmarking {:?} x {:?} matrices.", N, N);
 
     let L = rand_L1(N);
-    let Lt = TransposeMatrix(&L);
+    let Lt = transpose(&L);
 
     let start = precise_time_s();
     let A: M = mat_mul::<f64, M, TransposeMatrix<f64, M>, M>(&L, &Lt);
