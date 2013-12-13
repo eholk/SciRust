@@ -8,5 +8,4 @@
 extern mod extra;
 extern mod std;
 
-#[path="matrix/matrix.rs"]
 pub mod matrix;
