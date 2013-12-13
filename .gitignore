@@ -6,3 +6,4 @@ src/benchmark
 .rust
 build
 bin
+doc
