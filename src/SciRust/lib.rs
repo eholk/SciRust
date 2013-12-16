@@ -1,3 +1,4 @@
+#[pkgid = "SciRust"];
 #[link(name = "SciRust",
        vers = "0.1",
        url  = "https://github.com/eholk/SciRust")];
