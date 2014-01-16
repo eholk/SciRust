@@ -1,5 +1,5 @@
 extern mod extra;
-extern mod SciRust;
+extern mod SciRust = "SciRust#0.2";
 
 use extra::arc::Arc;
 
