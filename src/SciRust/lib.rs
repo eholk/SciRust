@@ -1,4 +1,4 @@
-#[crate_id = "SciRust#0.1"];
+#[crate_id = "SciRust#0.2pre"];
 #[comment = "A Scientific Computing Library for Rust"];
 #[crate_type = "lib"];
 
