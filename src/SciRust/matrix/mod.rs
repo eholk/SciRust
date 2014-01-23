@@ -22,10 +22,14 @@ impl<T: Num + FromPrimitive> Ring for T {
 }
 
 pub trait BasicMatrix<T> {
+    /// Returns an element in the matrix.
     fn get(&self, uint, uint) -> T;
+    /// Set an element in the matrix.
     fn set(&mut self, uint, uint, T);
 
+    /// Returns the number of rows in the matrix.
     fn num_rows(&self) -> uint;
+    /// Returns the number of columns in the matrix.
     fn num_cols(&self) -> uint;
 
     #[lang="index"]
