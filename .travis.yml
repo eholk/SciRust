@@ -5,3 +5,10 @@ install:
   - sudo apt-get install rust-nightly
 script:
   - make bench
+  - make docs
+
+env:
+  global:
+    - secure: WqnaJMghhonjDCOadSZ6qmLAckTa4Um26g77JSqF7sRv1I52dmJcDleAyOHP9x4b6v0+4J5xILACMdimYkSfe48vHoVFrIuyfVbnw41+oBFcVIa4fW/MzB9FVe4MSDCIvZZyE2Y0YP2pcPELgdfQyWef+SkbT6G39lHqZ7eWBQ0=
+after_script:
+  - curl http://www.rust-ci.org/artifacts/put?t=$RUSTCI_TOKEN | sh
