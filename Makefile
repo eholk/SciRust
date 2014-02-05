@@ -1,18 +1,19 @@
-.phony: all bench clean docs
+.phony: SciRust bench clean docs
 
-all:
-	rustpkg build -O SciRust
+RUSTC_OPTS = -O -Lbuild --out-dir build
 
-bench:
-	rustpkg install -O benchmark
-	./bin/benchmark
+SciRust: build
+	rustc $(RUSTC_OPTS) src/SciRust/lib.rs
+
+build:
+	mkdir -p build
+
+bench: SciRust
+	rustc $(RUSTC_OPTS) src/benchmark/main.rs
+	./build/main
 
 docs:
 	rustdoc src/SciRust/lib.rs
 
 clean:
-	rustpkg clean SciRust
-	rustpkg clean benchmark
-	rustpkg uninstall benchmark
-	rm -rf doc
-
+	rm -rf build
