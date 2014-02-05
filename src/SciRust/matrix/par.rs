@@ -35,7 +35,7 @@ pub fn sub_mul<T: Num + FromPrimitive, LHS: BasicMatrix<T> + Send + Clone, RHS: 
 
     let ((li, lj), (ln, lm)) = lc;
     let ((ri, rj), (rn, rm)) = rc;
-    if(ln * lm <= BLOCK_SIZE || rn * rm <= BLOCK_SIZE) {
+    if ln * lm <= BLOCK_SIZE || rn * rm <= BLOCK_SIZE {
         algorithms::mat_mul(&SubMatrix(&lhs, li, lj, ln, lm),
                             &SubMatrix(&rhs, ri, rj, rn, rm))
     }
