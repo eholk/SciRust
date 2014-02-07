@@ -1,5 +1,5 @@
-use extra::arc::Arc;
-use extra::future::Future;
+use sync::Arc;
+use sync::Future;
 
 use matrix::{BasicMatrix, Create, SubMatrix};
 use matrix::algorithms;

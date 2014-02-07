@@ -1,7 +1,9 @@
 extern mod extra;
-extern mod SciRust = "SciRust#0.2";
+extern mod sync;
 
-use extra::arc::Arc;
+extern mod SciRust;
+
+use sync::Arc;
 
 use SciRust::matrix;
 
