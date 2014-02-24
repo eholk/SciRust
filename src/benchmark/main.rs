@@ -1,5 +1,6 @@
 extern crate extra;
 extern crate sync;
+extern crate time;
 
 extern crate SciRust;
 
@@ -7,7 +8,7 @@ use sync::Arc;
 
 use SciRust::matrix;
 
-use extra::time::precise_time_s;
+use time::precise_time_s;
 
 use matrix::{Matrix, TransposeMatrix, transpose};
 use matrix::generate::{rand_L1};
