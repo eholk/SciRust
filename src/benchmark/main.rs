@@ -1,7 +1,7 @@
-extern mod extra;
-extern mod sync;
+extern crate extra;
+extern crate sync;
 
-extern mod SciRust;
+extern crate SciRust;
 
 use sync::Arc;
 
