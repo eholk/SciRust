@@ -1,6 +1,6 @@
 use std::num::from_int;
-use std::rand;
-use std::rand::Rand;
+use rand;
+use rand::Rand;
 
 use matrix::{BasicMatrix, Create, Ring};
 
