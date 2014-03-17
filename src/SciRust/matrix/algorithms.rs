@@ -133,7 +133,7 @@ pub fn mat_add<T: Num, LHS: BasicMatrix<T>, RHS: BasicMatrix<T>, Res: BasicMatri
 pub fn mat_add_inplace<T: Num, LHS: BasicMatrix<T>, RHS: BasicMatrix<T>>
 (lhs: &mut LHS, rhs: &RHS) {
     for_each(lhs, |i, j, x| {
-        x + rhs[(i, j)]
+        x + rhs.get(i, j)
     })
 }
 
@@ -144,7 +144,7 @@ pub fn mat_add_into<T: Num, Dest: BasicMatrix<T>, LHS: BasicMatrix<T>, RHS: Basi
     assert!(lhs.num_rows() == rhs.num_rows());
     assert!(lhs.num_cols() == rhs.num_cols());
     for_each(dest, |i, j, _| {
-        lhs[(i, j)] + rhs[(i, j)]
+        lhs.get(i, j) + rhs.get(i, j)
     })
 }
 
