@@ -1,4 +1,3 @@
-extern crate extra;
 extern crate sync;
 extern crate time;
 
