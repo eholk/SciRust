@@ -3,7 +3,7 @@
 use std::cast;
 use std::num;
 use std::ops;
-use std::vec;
+use std::slice;
 
 pub mod algorithms;
 pub mod generate;
@@ -160,7 +160,7 @@ impl<T: Clone> Create<T> for Matrix<T> {
         Matrix {
             rows: i,
             cols: j,
-            data: vec::from_fn(i * j, |k| {
+            data: slice::from_fn(i * j, |k| {
                 let i = k / j;
                 let j = k % j;
                 init(i, j)

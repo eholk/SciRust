@@ -22,7 +22,7 @@ fn subdivide_coords(x: SubCoords) -> (SubCoords, SubCoords, SubCoords, SubCoords
 
 pub fn mat_mul<T: Num + FromPrimitive, LHS: BasicMatrix<T> + Send + Clone, RHS: BasicMatrix<T> + Send + Clone, Res: BasicMatrix<T> + Create<T> + Send>
 (lhs: &LHS, rhs: &RHS) -> Res {
-    assert!(lhs.num_cols() == rhs.num_cols());
+    assert!(lhs.num_cols() == rhs.num_rows());
 
     sub_mul(lhs.clone(), ((0, 0), (lhs.num_rows(), lhs.num_cols())),
             rhs.clone(), ((0, 0), (rhs.num_rows(), rhs.num_cols())))
@@ -107,15 +107,15 @@ pub fn sub_mul<T: Num + FromPrimitive, LHS: BasicMatrix<T> + Send + Clone, RHS: 
     }
 }
 
-impl<T, M: BasicMatrix<T> + Send + Freeze> BasicMatrix<T> for Arc<M> {
+impl<T, M: BasicMatrix<T> + Send> BasicMatrix<T> for Arc<M> {
     fn get(&self, i: uint, j: uint) -> T {
-        self.get().get(i, j)
+        (*self).get(i, j)
     }
 
     fn set(&mut self, _i: uint, _j: uint, _x: T) {
         fail!("Attempting to mutate shared matrix.");
     }
 
-    fn num_rows(&self) -> uint { self.get().num_rows() }
-    fn num_cols(&self) -> uint { self.get().num_cols() }
+    fn num_rows(&self) -> uint { (*self).num_rows() }
+    fn num_cols(&self) -> uint { (*self).num_cols() }
 }

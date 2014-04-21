@@ -9,7 +9,7 @@ use SciRust::matrix;
 
 use time::precise_time_s;
 
-use matrix::{Matrix, TransposeMatrix, transpose};
+use matrix::{BasicMatrix, Matrix, TransposeMatrix, transpose};
 use matrix::generate::{rand_L1};
 use matrix::algorithms::{mat_mul, cholesky_seq_inplace,
                         inverse, cholesky_blocked, mat_mul_blocked,
@@ -53,10 +53,11 @@ fn benchmark(N: uint) {
     let Lts: M = convert(&Lt);
     let Lts = Arc::new(Lts);
 
-    let start = precise_time_s();
-    let _Ap: M = par::mat_mul(&Ls, &Lts);
-    let stop = precise_time_s();
-    println!("Matrix Multiply (parallel): {:?}s", stop - start);
+    //let start = precise_time_s();
+    //println!("{:?}", ((*Ls).num_rows(), (*Lts).num_cols()));
+    //let _Ap: M = par::mat_mul(&Ls, &Lts);
+    //let stop = precise_time_s();
+    //println!("Matrix Multiply (parallel): {:?}s", stop - start);
 
     let start = precise_time_s();
     let _Ai: M = inverse(&A);
