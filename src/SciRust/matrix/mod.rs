@@ -121,14 +121,14 @@ pub struct Matrix<T> {
     rows: uint,
     cols: uint,
 
-    data: ~[T]
+    data: Vec<T>
 }
 
 impl<T: Clone> BasicMatrix<T> for Matrix<T> {
     #[inline(always)]
     fn get(&self, i: uint, j: uint) -> T {
         if i < self.num_rows() && j < self.num_cols() {
-            self.data[i * self.num_cols() + j].clone()
+            self.data.as_slice()[i * self.num_cols() + j].clone()
         }
         else {
             fail!(format!("Index out of bounds. Index: {:?}, Dimension: {:?}",
@@ -140,7 +140,8 @@ impl<T: Clone> BasicMatrix<T> for Matrix<T> {
     #[inline(always)]
     fn set(&mut self, i: uint, j: uint, x: T) {
         if i < self.num_rows() && j < self.num_cols() {
-            self.data[i * self.num_cols() + j] = x
+            let k = i * self.num_cols() + j;
+            self.data.as_mut_slice()[k] = x
         }
         else {
             fail!(format!("Index out of bounds. Index: {:?}, Dimension: {:?}",
@@ -160,7 +161,7 @@ impl<T: Clone> Create<T> for Matrix<T> {
         Matrix {
             rows: i,
             cols: j,
-            data: slice::from_fn(i * j, |k| {
+            data: Vec::from_fn(i * j, |k| {
                 let i = k / j;
                 let j = k % j;
                 init(i, j)

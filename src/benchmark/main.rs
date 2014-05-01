@@ -1,7 +1,7 @@
 extern crate sync;
 extern crate time;
 
-extern crate SciRust;
+extern crate SciRust = "SciRust#0.3pre";
 
 use sync::Arc;
 
@@ -9,12 +9,12 @@ use SciRust::matrix;
 
 use time::precise_time_s;
 
-use matrix::{BasicMatrix, Matrix, TransposeMatrix, transpose};
-use matrix::generate::{rand_L1};
-use matrix::algorithms::{mat_mul, cholesky_seq_inplace,
+use SciRust::matrix::{BasicMatrix, Matrix, TransposeMatrix, transpose};
+use SciRust::matrix::generate::{rand_L1};
+use SciRust::matrix::algorithms::{mat_mul, cholesky_seq_inplace,
                         inverse, cholesky_blocked, mat_mul_blocked,
                         convert};
-use matrix::par;
+use SciRust::matrix::par;
 
 // We'll settle for this for now.
 //#[path="matrix/matrix.rs"]
