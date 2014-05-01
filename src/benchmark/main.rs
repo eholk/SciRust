@@ -16,10 +16,6 @@ use SciRust::matrix::algorithms::{mat_mul, cholesky_seq_inplace,
                         convert};
 use SciRust::matrix::par;
 
-// We'll settle for this for now.
-//#[path="matrix/matrix.rs"]
-//mod matrix;
-
 type M = Matrix<f64>;
 
 fn benchmark(N: uint) {
@@ -34,12 +30,6 @@ fn benchmark(N: uint) {
     
     println!("Matrix Multiply: {:?}s", stop - start);
 
-    //let start = precise_time_s();
-    //let Ap: M = par::mat_mul(&L, &Lt);
-    //let stop = precise_time_s();
-    //
-    //println!("Matrix Multiply (parallel): {:?}s", stop - start);
-
     // TODO: make sure A and Ap agree.
 
     let start = precise_time_s();
@@ -48,11 +38,11 @@ fn benchmark(N: uint) {
     
     println!("Matrix Multiply (blocked): {:?}s", stop - start);
 
-    let Ls: M = convert(&L);
-    let Ls = Arc::new(Ls);
-    let Lts: M = convert(&Lt);
-    let Lts = Arc::new(Lts);
-
+    //let Ls: M = convert(&L);
+    //let Ls = Arc::new(Ls);
+    //let Lts: M = convert(&Lt);
+    //let Lts = Arc::new(Lts);
+    //
     //let start = precise_time_s();
     //println!("{:?}", ((*Ls).num_rows(), (*Lts).num_cols()));
     //let _Ap: M = par::mat_mul(&Ls, &Lts);

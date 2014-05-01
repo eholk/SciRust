@@ -117,6 +117,7 @@ pub fn col<'a, T, M: BasicMatrix<T>>(m: &'a M, j: uint)
 }
 
 // A matrix in Row-Major Order
+#[deriving(Clone)]
 pub struct Matrix<T> {
     rows: uint,
     cols: uint,
@@ -220,6 +221,14 @@ impl<'r, T, M: BasicMatrix<T>> BasicMatrix<T> for SubMatrix<'r, T, M> {
 }
 
 pub struct TransposeMatrix<'r, T, M>(&'r M);
+
+impl<'r, T, M> Clone for TransposeMatrix<'r, T, M> {
+    fn clone(&self) -> TransposeMatrix<'r, T, M> {
+        match self {
+            &TransposeMatrix(m) => TransposeMatrix(m)
+        }
+    }
+}
 
 pub fn transpose<'r, T, M>(m: &'r M) -> TransposeMatrix<'r, T, M> {
     TransposeMatrix(m)
