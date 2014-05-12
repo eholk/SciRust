@@ -1,9 +1,8 @@
 // Linear Algrebra library for Rust
 
-use std::cast;
+use std::mem;
 use std::num;
 use std::ops;
-use std::slice;
 
 pub mod algorithms;
 pub mod generate;
@@ -205,7 +204,7 @@ impl<'r, T, M: BasicMatrix<T>> BasicMatrix<T> for SubMatrix<'r, T, M> {
             self.base.get(i + self.i, j + self.j)
         }
         else {
-            fail!(~"SubMatrix index out of bounds.")
+            fail!("SubMatrix index out of bounds.")
         }
     }
 
@@ -215,7 +214,7 @@ impl<'r, T, M: BasicMatrix<T>> BasicMatrix<T> for SubMatrix<'r, T, M> {
             self.base.set(i + self.i, j + self.j, x)
         }
         else {
-            fail!(~"SubMatrix index out of bounds.")
+            fail!("SubMatrix index out of bounds.")
         }
     }
 }
@@ -243,7 +242,7 @@ impl<'r, T, M> TransposeMatrix<'r, T, M> {
 
     fn get_mut(&mut self) -> &'r mut M {
         match self {
-            &TransposeMatrix(m) => unsafe { cast::transmute_mut(m) }
+            &TransposeMatrix(m) => unsafe { mem::transmute(m) }
         }
     }
 }

@@ -8,7 +8,7 @@ use matrix::generate::zero_matrix;
 pub fn dot<T: num::Num, L: Vector<T>, R: Vector<T>>(lhs: &L, rhs: &R) -> T {
     assert!(lhs.len() > 0)
     if lhs.len() != rhs.len() {
-        fail!(~"Invalid vector lengths.")
+        fail!("Invalid vector lengths.")
     }
 
     //error!("%? ### %?", lhs, rhs);
@@ -120,7 +120,7 @@ pub fn mat_mul_blocked<T: Num + num::FromPrimitive, LHS: BasicMatrix<T>, RHS: Ba
 pub fn mat_add<T: Num, LHS: BasicMatrix<T>, RHS: BasicMatrix<T>, Res: BasicMatrix<T> + Create<T>> (lhs: &LHS, rhs: &RHS) -> Res
 {
     if lhs.num_cols() != rhs.num_cols() || lhs.num_rows() != rhs.num_rows() {
-        fail!(~"Incompatible matrix sizes")
+        fail!("Incompatible matrix sizes")
     }
 
     Create::<T>::create(lhs.num_rows(), rhs.num_cols(), |i, j| {
