@@ -1,3 +1,5 @@
+#![allow(uppercase_variables)]
+
 use std::num::from_int;
 use rand;
 use rand::Rand;
@@ -20,7 +22,7 @@ pub fn identity<T: Ring, M: BasicMatrix<T> + Create<T>>(N: uint)
 // Generate a random square lower triangular matrix with unit diagonal.
 pub fn rand_L1<T: Rand + FromPrimitive, M: BasicMatrix<T> + Create<T>>(N: uint)
     -> M {
-    let mut r = rand::rng();
+    let mut r = rand::task_rng();
 
     Create::create(N, N, |i, j| {
         if i == j {

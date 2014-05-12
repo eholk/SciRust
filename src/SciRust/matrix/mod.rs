@@ -49,7 +49,7 @@ pub trait Vector<T> : ops::Index<uint, T> {
 }
 
 // Row and Column Vectors (Views into existing matrices)
-struct RowVector<'r, T, M> {
+pub struct RowVector<'r, T, M> {
     i: uint,
     base: &'r M
 }
@@ -67,7 +67,7 @@ impl<'r, T, M: BasicMatrix<T>> ops::Index<uint, T> for RowVector<'r, T, M> {
     fn index(&self, i: &uint) -> T { self.get(*i) }
 }
 
-struct ColumnVector<'r, T, M> {
+pub struct ColumnVector<'r, T, M> {
     j: uint,
     base: &'r M
 }

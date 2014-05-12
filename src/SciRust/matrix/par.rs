@@ -1,3 +1,5 @@
+#![allow(uppercase_variables)]
+
 use sync::Arc;
 use sync::Future;
 
@@ -28,7 +30,7 @@ pub fn mat_mul<T: Num + FromPrimitive, LHS: BasicMatrix<T> + Send + Clone, RHS: 
             rhs.clone(), ((0, 0), (rhs.num_rows(), rhs.num_cols())))
 }
 
-pub fn sub_mul<T: Num + FromPrimitive, LHS: BasicMatrix<T> + Send + Clone, RHS: BasicMatrix<T> + Send + Clone, Res: BasicMatrix<T> + Create<T> + Send>
+fn sub_mul<T: Num + FromPrimitive, LHS: BasicMatrix<T> + Send + Clone, RHS: BasicMatrix<T> + Send + Clone, Res: BasicMatrix<T> + Create<T> + Send>
 (lhs: LHS, lc: SubCoords, rhs: RHS, rc: SubCoords) -> Res
 {
     static BLOCK_SIZE: uint = 1 << 13;

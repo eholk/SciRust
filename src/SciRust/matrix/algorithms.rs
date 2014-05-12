@@ -1,3 +1,5 @@
+#![allow(uppercase_variables)]
+
 use std::num;
 
 use matrix::{BasicMatrix, Create, SubMatrix, 

@@ -1,20 +1,18 @@
+#![allow(uppercase_variables)]
+
 extern crate sync;
 extern crate time;
 
 extern crate SciRust = "SciRust#0.3pre";
 
-use sync::Arc;
-
-use SciRust::matrix;
-
 use time::precise_time_s;
 
-use SciRust::matrix::{BasicMatrix, Matrix, TransposeMatrix, transpose};
+use SciRust::matrix::{Matrix, TransposeMatrix, transpose};
 use SciRust::matrix::generate::{rand_L1};
 use SciRust::matrix::algorithms::{mat_mul, cholesky_seq_inplace,
                         inverse, cholesky_blocked, mat_mul_blocked,
                         convert};
-use SciRust::matrix::par;
+//use SciRust::matrix::par;
 
 type M = Matrix<f64>;
 
