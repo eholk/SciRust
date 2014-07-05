@@ -1,7 +1,8 @@
 #![allow(uppercase_variables)]
+#![allow(non_snake_case_functions)]
 
 use std::num::from_int;
-use rand;
+use std::rand;
 use rand::Rand;
 
 use matrix::{BasicMatrix, Create, Ring};

@@ -1,7 +1,7 @@
 #![allow(uppercase_variables)]
 
-use sync::Arc;
-use sync::Future;
+use std::sync::Arc;
+use std::sync::Future;
 
 use matrix::{BasicMatrix, Create, SubMatrix};
 use matrix::algorithms;

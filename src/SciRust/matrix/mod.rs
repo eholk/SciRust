@@ -1,4 +1,5 @@
 // Linear Algrebra library for Rust
+#![allow(non_snake_case_functions)]
 
 use std::mem;
 use std::num;

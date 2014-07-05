@@ -1,0 +1,13 @@
+[package]
+
+name = "SciRust"
+version = "0.1.0"
+authors = [ "Eric Holk <eholk@cs.indiana.edu>" ]
+
+[[lib]]
+
+name = "scirust" # the name of the executable to generate
+# crate_type = ["dylib", "staticlib"]
+path = "src/SciRust/lib.rs"
+
+# vi: ft=conf
