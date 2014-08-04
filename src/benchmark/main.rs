@@ -1,5 +1,6 @@
 #![allow(uppercase_variables)]
 
+extern crate debug;
 extern crate sync;
 extern crate time;
 
