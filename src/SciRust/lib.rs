@@ -1,4 +1,4 @@
-#![crate_id = "SciRust#0.3pre"]
+#![crate_id = "SciRust#0.3"]
 #![comment = "A Scientific Computing Library for Rust"]
 #![crate_type = "lib"]
 #![feature(lang_items)]

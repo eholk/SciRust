@@ -4,7 +4,7 @@ extern crate debug;
 extern crate sync;
 extern crate time;
 
-extern crate SciRust = "SciRust#0.3pre";
+extern crate SciRust = "SciRust#0.3";
 
 use time::precise_time_s;
 
