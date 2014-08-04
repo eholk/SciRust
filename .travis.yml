@@ -1,5 +1,5 @@
 install:
-  - wget http://static.rust-lang.org/dist/rust-nightly-x86_64-unknown-linux-gnu.tar.gz
+  - wget http://static.rust-lang.org/dist/rust-0.11.0-x86_64-unknown-linux-gnu.tar.gz
   - tar xzf rust-nightly-x86_64-unknown-linux-gnu.tar.gz
   - export PATH=$PATH:$(pwd)/rust-nightly-x86_64-unknown-linux-gnu/bin
   - rustc -v
